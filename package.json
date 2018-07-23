@@ -1,0 +1,18 @@
+{
+  "name": "handle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "cjs": "rollup -w -c config/rollup.config.js --environment TARGET:cjs",
+    "es": "rollup -w -c config/rollup.config.js --environment TARGET:es"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "koa": "^2.5.2",
+    "koa-body": "^4.0.4",
+    "koa-router": "^7.4.0",
+    "rollup": "^0.63.4"
+  }
+}
