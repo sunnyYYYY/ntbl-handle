@@ -1,3 +1,4 @@
+import {terser} from "rollup-plugin-terser"
 import {version} from '../package.json'
 
 const name = 'handle'
@@ -8,15 +9,22 @@ const banner =
   ' * Released under the MIT License.\n' +
   ' */'
 
-const getConfig = format => ({
-  input: 'dist/index.js',
-  output: {
-    file: `src/${name}.${format}.js`,
-    format,
-    banner,
-    name,
-  },
-})
+const getConfig = format => {
+  const min = format[0]
+  if (min === '@') format = format.substring(1)
+
+  return {
+    input: 'dist/index.js',
+    output: {
+      file: `src/${name}.${format}.${min ? 'min.' : ''}js`,
+      format,
+      banner,
+      name,
+    },
+    plugins: [].concat(min && terser()),
+    external: ['merge'],
+  }
+}
 
 
 export default getConfig(process.env.TARGET)
