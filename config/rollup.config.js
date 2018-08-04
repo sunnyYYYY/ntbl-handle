@@ -14,9 +14,9 @@ const getConfig = format => {
   if (min === '@') format = format.substring(1)
 
   return {
-    input: 'dist/index.js',
+    input: 'src/index.js',
     output: {
-      file: `src/${name}.${format}.${min ? 'min.' : ''}js`,
+      file: `dist/${name}.${format}.${min ? 'min.' : ''}js`,
       format,
       banner,
       name,

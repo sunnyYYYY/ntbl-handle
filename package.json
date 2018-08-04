@@ -9,7 +9,7 @@
     "@cjs": "rollup -c config/rollup.config.js --environment TARGET:@cjs",
     "es": "rollup -c config/rollup.config.js --environment TARGET:es",
     "@es": "rollup -c config/rollup.config.js --environment TARGET:@es",
-    "docs": "jsdoc dist -r -d docs"
+    "docs": "jsdoc src -r -d docs"
   },
   "author": "",
   "license": "ISC",
@@ -17,9 +17,7 @@
     "koa": "^2.5.2",
     "koa-body": "^4.0.4",
     "koa-router": "^7.4.0",
-    "rollup": "^0.63.4"
-  },
-  "dependencies": {
+    "rollup": "^0.63.4",
     "rollup-plugin-terser": "^1.0.1"
   }
 }
