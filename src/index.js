@@ -1,7 +1,6 @@
 import {getOp, getRequestData, mixinScope, getProxyFunNames} from './utils'
 import Include from "./inclue"
-// import Base from './interface'
-
+import Base from './interface'
 
 /**
  * Handle.js，
@@ -12,14 +11,15 @@ import Include from "./inclue"
  * @param {Model} model - sequelize 的模型实例
  * @param {object} [options={}] - 选项对象
  * @param {Mock} [options.mock=null] - mock 库，以启用 Handle.prototype.mock 方法
+ * @param {Sequelize} [sequelize=null] - Sequelize 实例，以启用事务方法
  * @param {function} [options.before(data, ctx, next)] - 全局钩子。before 钩子在数据库操作之前执行。（注意，全局钩子 before 与快捷方法的 before 函数行为一致，但 before 函数在 全局钩子 before 之后调用，可能会发生覆盖。）
  * @param {function} [options.after(result, ctx, next)] - 全局钩子。 after 钩子在数据库操作之后执行（注意，情况和全局钩子 before 相同）
  * @param {function} [options.data(err, data, ctx, next)] - 全局钩子。data 钩子可以在返回数据到前端之前和捕获异常之后做一些处理。
  * @extends Base
  */
-class Handle{
+class Handle extends Base{
   constructor (model, options = {}) {
-    // super()
+    super()
     this.model = model
     this.options = options
     // TODO: 方法作用域需要在恰当的时机清空，以保证其他方法不会受到干扰
@@ -93,15 +93,14 @@ class Handle{
       data: globalData
     } = this.options
 
+
+
     return async (ctx, next) => {
       let data = getRequestData(method, ctx)
       try {
         globalBefore && globalBefore(data, ctx, next)
 
         // 过程方法内部需用 request body data 处理 where 处理子句简写和作用域
-        // 不过，在流程开始后，接受的仍然是正常的 request body data
-        // 所以在流程内部无法访问到 data（总体看，这个 hack 可以接受）
-        // 见下文 (237行)
         this._data = data
         let result = await f.call(this, data, ctx, next)
         this._data = {}
@@ -129,9 +128,18 @@ class Handle{
   }
 
   /**
-   * TODO: 未实现（事务）
+   * 启用一个事务，用法上和 process 相同。
+   *
+   * @since 1.0.0
+   * @param {string} [method='get'] - 请求方法
+   * @param {asyncFunction} f(data,ctx,next,t) - 一个 async/await 函数
+   * @returns {Function}
    */
-  transaction () {}
+  transaction (method, f) {
+    return this.process(method, async function (d, ctx, next) {
+      return await sequelize.transaction(t => f.call(this, d, ctx, next, t))
+    })
+  }
 
   /**
    * 向数据库中批量插入由 mock 生成的随机数据
@@ -173,13 +181,17 @@ class Handle{
   __init (map) {
     for (let method in map) {
       map[method].forEach(funcName => {
-        // 注意，绝逼不能用箭头函数，之间引起了模型引用错乱的 bug（mnp）
+        // 注意，绝逼不能用箭头函数，之前引起了模型引用错乱的 bug（mnp）
         Handle.prototype[funcName] = function (...args) {
-          return this.__base(method, funcName, ...args)
+          const scopes = this._scopes
+          this._scopes = []
+          return this.__base(method, funcName, scopes, ...args)
         }
         const rawFuncName = 'raw' + funcName[0].toUpperCase() + funcName.substring(1)
         Handle.prototype[rawFuncName] = function (...args) {
-          return this.__processBase(funcName, ...args)
+          const scopes = this._scopes
+          this._scopes = []
+          return this.__processBase(funcName, scopes, ...args)
         }
       })
     }
@@ -197,7 +209,7 @@ class Handle{
    * @private
    */
 
-  __base (method, funcName, o, before, after) {
+  __base (method, funcName, scopes, o, before, after) {
     const {
       before: globalBefore,
       after: globalAfter,
@@ -210,8 +222,9 @@ class Handle{
         if (globalBefore) data = globalBefore(data, ctx, next)
         if(before) data = before(data, ctx, next)
         // 生成模型方法的选项对象并混合作用域
+        console.log('data ->', data)
         let op = getOp(o, data, ctx, next)
-        op = mixinScope(data, op, this._defaultScopes, this._scopes)
+        op = mixinScope(data, op, this._defaultScopes, scopes)
         // 根据模型方法的参数个数生成对应的参数数据
         const func = this.model[funcName]
         let len = func.length
@@ -237,22 +250,18 @@ class Handle{
    * @returns {Promise<void>}
    * @private
    */
-  async __processBase(funcName, d, o) {
+  async __processBase(funcName, scopes, d, o) {
     if (!o) {o = d; d = null}
-    // 接上（100行）
-    // 为什么不用 d？而是迂回。
-    // 因为使过程方法的使用和快捷方法一致（除了 create 类的方法）
-    // 因为支持了 where 子句简写和作用域，又不能要求每次调用过程方法都必须显式的把 data 传入，所以只好迂回而入。
-    // 为什么不包括 create 类的方法，因为在数据插入当数据库之前，你可能会验证和预处理这些数据。
+
     const data = this._data
     // 生成模型方法的选项对象并混合作用域
     let op = getOp(o, data)
-    op = mixinScope(data, op, this._defaultScopes, this._scopes)
+    op = mixinScope(data, op, this._defaultScopes, scopes)
+    console.log(op)
     // 根据...
     op = d ? [d, op] : [op]
     return await this.model[funcName](...op)
   }
-
 }
 
 
