@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "cjs": "rollup -w -c config/rollup.config.js --environment TARGET:cjs",
-    "es": "rollup -w -c config/rollup.config.js --environment TARGET:es"
+    "build": "npm run cjs && npm run @cjs && npm run es && npm run @es",
+    "cjs": "rollup -c config/rollup.config.js --environment TARGET:cjs",
+    "@cjs": "rollup -c config/rollup.config.js --environment TARGET:@cjs",
+    "es": "rollup -c config/rollup.config.js --environment TARGET:es",
+    "@es": "rollup -c config/rollup.config.js --environment TARGET:@es"
   },
   "author": "",
   "license": "ISC",
@@ -14,5 +17,8 @@
     "koa-body": "^4.0.4",
     "koa-router": "^7.4.0",
     "rollup": "^0.63.4"
+  },
+  "dependencies": {
+    "rollup-plugin-terser": "^1.0.1"
   }
 }

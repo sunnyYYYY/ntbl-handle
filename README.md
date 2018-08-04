@@ -79,7 +79,7 @@ handle.findAll(d => ({
  */
 handle.findAll(d => ({
   where: {},
-  ...pagination
+  ...pagination(d)
 }))
 
 function pagination ({count = 5, page = 0}) {
@@ -120,7 +120,7 @@ handle.findAll(d => ({
   }
 }), null, d => {
   d.tableId = d.id
-  // 虽然要求返回新的数据对象，但因为对象引用，可不写
+  return d
 })
 
 
@@ -133,9 +133,10 @@ handle.toggle()
 // scope 具有链式的相互声明，适用于模型和数据过滤
 // 选项函数，具有强大的可操作性，适用于复杂的查询逻辑
 handle.scope()
+
 // 对 sequelize 事务的封装
 // 减少一半代码，让你只关心事务部分
-handle.transaction()
+// handle.transaction()
 ```
 
 # 方法一览
