@@ -9,7 +9,7 @@
     "@cjs": "rollup -c config/rollup.config.js --environment TARGET:@cjs",
     "es": "rollup -c config/rollup.config.js --environment TARGET:es",
     "@es": "rollup -c config/rollup.config.js --environment TARGET:@es",
-    "docs": "jsdoc src -r -d docs -R README.md"
+    "docs": "jsdoc -c jsdoc.conf.json -t ./node_modules/ink-docstrap/template -R README.md  -d docs"
   },
   "author": "",
   "license": "ISC",
@@ -19,5 +19,8 @@
     "koa-router": "^7.4.0",
     "rollup": "^0.63.4",
     "rollup-plugin-terser": "^1.0.1"
+  },
+  "dependencies": {
+    "ink-docstrap": "^1.3.2"
   }
 }

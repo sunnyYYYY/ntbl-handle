@@ -1,69 +1,109 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>JSDoc: Class: Handle</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>DocStrap Class: Handle</title>
 
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.Flatly.css">
+
 </head>
 
 <body>
 
-<div id="main">
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">DocStrap</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="Handle.html">Handle</a></li><li><a href="Include.html">Include</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
 
-    <h1 class="page-title">Class: Handle</h1>
-
-    
-
+</div>
+</div>
 
 
+<div class="container" id="toc-content">
+<div class="row">
 
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
+
+	<h1 class="page-title">Class: Handle</h1>
 <section>
 
 <header>
     
-        <h2><span class="attribs"><span class="type-signature"></span></span>Handle<span class="signature">(model, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h2>
+        <h2>
+        Handle
+        </h2>
         
             <div class="class-description">Handle.js，一个基于 koa 和 sequelize 的中间库,让你只专注于接口逻辑。</div>
         
     
 </header>
 
+
 <article>
     <div class="container-overview">
     
         
+<hr>
+<dt>
+    <h4 class="name" id="Handle"><span class="type-signature"></span>new Handle(model [, options])</h4>
+    
+    
+</dt>
+<dd>
 
     
-    <h2>Constructor</h2>
-    
 
-    
-    <h4 class="name" id="Handle"><span class="type-signature"></span>new Handle<span class="signature">(model, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
 
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
     
+    
+        <h5>Parameters:</h5>
+        
 
-<table class="params">
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -73,7 +113,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
+        <th>Argument</th>
         
 
         
@@ -96,6 +136,7 @@
             
                 
 <span class="param-type">Model</span>
+
 
 
             
@@ -133,6 +174,7 @@
 <span class="param-type">object</span>
 
 
+
             
             </td>
 
@@ -157,10 +199,10 @@
             
 
             <td class="description last">选项对象
-                <h6>Properties</h6>
+                <h6 class="method-params-label method-subparams-label">Properties</h6>
                 
 
-<table class="params">
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -170,7 +212,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
+        <th>Argument</th>
         
 
         
@@ -193,6 +235,7 @@
             
                 
 <span class="param-type">Mock</span>
+
 
 
             
@@ -234,6 +277,7 @@
 <span class="param-type">function</span>
 
 
+
             
             </td>
 
@@ -269,6 +313,7 @@
             
                 
 <span class="param-type">function</span>
+
 
 
             
@@ -308,6 +353,7 @@
 <span class="param-type">function</span>
 
 
+
             
             </td>
 
@@ -343,12 +389,17 @@
     </tbody>
 </table>
 
+    
 
-
-
-
-
+    
 <dl class="details">
+    
+
+	
+
+	
+
+	
 
     
 
@@ -358,52 +409,42 @@
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line20">line 20</a>
-    </li></ul></dd>
-    
+	
 
-    
+	
 
-    
-
-    
+	
 </dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
+    
+</dd>
 
     
     </div>
@@ -430,127 +471,125 @@
     
 
     
-
-    
         <h3 class="subsection-title">Members</h3>
 
-        
+        <dl>
             
-<h4 class="name" id=".Include"><span class="type-signature">(static) </span>Include<span class="type-signature"> :<a href="Include.html">Include</a></span></h4>
+<hr>
+<dt class="name" id=".Include">
+    <h4 id=".Include"><span class="type-signature">&lt;static> </span>Include<span class="type-signature"> :<a href="Include.html">Include</a></span></h4>
 
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        关联生成器
+    </div>
+    
 
-
-
-<div class="description">
-    关联生成器
-</div>
-
-
-
-    <h5>Type:</h5>
-    <ul>
-        <li>
-            
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
 <span class="param-type"><a href="Include.html">Include</a></span>
 
 
-        </li>
-    </ul>
 
-
-
-
-
-<dl class="details">
-
-    
-
-    
-    <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>1.0.0</li></ul></dd>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line266">line 266</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li><a href="Include.html">Include</a></li>
+            </li>
         </ul>
-    </dd>
     
 
     
+<dl class="details">
+    
+
+	
+
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
+	<dd class="tag-see">
+		<ul>
+			<li><a href="Include.html">Include</a></li>
+			</ul>
+	</dd>
+	
+
+	
 </dl>
 
 
+    
+</dd>
 
-
-
-
-        
+        </dl>
     
 
     
         <h3 class="subsection-title">Methods</h3>
 
-        
+        <dl>
             
+<hr>
+<dt>
+    <h4 class="name" id="defaultScope"><span class="type-signature"></span>defaultScope(scopes)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        组合一个或多个实例作用域（作用于实例的每个方法）
+    </div>
+    
+
+    
 
     
 
     
-    <h4 class="name" id="defaultScope"><span class="type-signature"></span>defaultScope<span class="signature">(&hellip;scopes)</span><span class="type-signature"> &rarr; {<a href="Handle.html">Handle</a>}</span></h4>
     
+        <h5>Parameters:</h5>
+        
 
-    
-
-
-
-<div class="description">
-    组合一个或多个实例作用域（作用于实例的每个方法）
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -560,7 +599,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
+        <th>Argument</th>
         
 
         
@@ -584,6 +623,7 @@
 |
 
 <span class="param-type">function</span>
+
 
 
             
@@ -610,31 +650,24 @@
     </tbody>
 </table>
 
+    
 
-
-
-
-
+    
 <dl class="details">
-
     
 
-    
-    <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>1.0.0</li></ul></dd>
-    
+	
 
-    
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
 
-    
-
-    
-
-    
-
-    
-
-    
+	
 
     
 
@@ -644,42 +677,49 @@
 
     
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line41">line 41</a>
-    </li></ul></dd>
-    
+	
 
-    
+	
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>scope rawScope</li>
-        </ul>
-    </dd>
-    
+	
 
-    
+	
+
+	
+
+
+
+	
+
+	
+
+	
+	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
+	<dd class="tag-see">
+		<ul>
+			<li>scope rawScope</li>
+			</ul>
+	</dd>
+	
+
+	
 </dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 
 
 <dl>
@@ -691,44 +731,42 @@
 <span class="param-type"><a href="Handle.html">Handle</a></span>
 
 
+
     </dd>
 </dl>
 
+
+        
+
     
-
-
-
-
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="mock"><span class="type-signature"></span>mock(rule)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        向数据库中批量插入由 mock 生成的随机数据
+    </div>
+    
+
+    
 
     
 
     
-    <h4 class="name" id="mock"><span class="type-signature"></span>mock<span class="signature">(rule)</span><span class="type-signature"> &rarr; {*}</span></h4>
     
+        <h5>Parameters:</h5>
+        
 
-    
-
-
-
-<div class="description">
-    向数据库中批量插入由 mock 生成的随机数据
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -759,6 +797,7 @@
 <span class="param-type">object</span>
 
 
+
             
             </td>
 
@@ -773,31 +812,24 @@
     </tbody>
 </table>
 
+    
 
-
-
-
-
+    
 <dl class="details">
-
     
 
-    
-    <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>1.0.0</li></ul></dd>
-    
+	
 
-    
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
 
-    
-
-    
-
-    
-
-    
-
-    
+	
 
     
 
@@ -807,35 +839,42 @@
 
     
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line156">line 156</a>
-    </li></ul></dd>
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
 </dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 
 
 <dl>
@@ -847,49 +886,48 @@
 <span class="param-type">*</span>
 
 
+
     </dd>
 </dl>
 
+
+        
+
     
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">// 生成 10 条数据（mockjs 为例）h.mock({ &#x27;data|10&#x27;: [   {     title: &#x27;@ctitle&#x27;,     content: &#x27;@cparagraph&#x27;,   } ]})</pre>
 
 
-
-
-    <h5>Example</h5>
     
-    <pre class="prettyprint"><code>// 生成 10 条数据（mockjs 为例）h.mock({ 'data|10': [   {     title: '@ctitle',     content: '@cparagraph',   } ]})</code></pre>
-
-
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="process"><span class="type-signature"></span>process( [method], f(data,ctx,next))</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        开始一个过程流程，并结合过程方法（raw*）提供更灵活的空间。过程的流程处在【获取前端数据】与【返回数据到前端】之间,过程方法（以 raw 开头的模型方法）专门为过程流程而生，它不同于快捷方法，过程方法返回从数据库来的数据，并由你决定如何处理。很合适数据验证、过滤和对数据库多次操作的场景。全局钩子的行为发生了一些变化，在整个过程流程中只会执行一次。（注意，流程结束时，必须 return 出返回前端的数据）
+    </div>
+    
+
+    
 
     
 
     
-    <h4 class="name" id="process"><span class="type-signature"></span>process<span class="signature">(method<span class="signature-attributes">opt</span>, f(data,ctx,next))</span><span class="type-signature"> &rarr; {function}</span></h4>
     
+        <h5>Parameters:</h5>
+        
 
-    
-
-
-
-<div class="description">
-    开始一个过程流程，并结合过程方法（raw*）提供更灵活的空间。过程的流程处在【获取前端数据】与【返回数据到前端】之间,过程方法（以 raw 开头的模型方法）专门为过程流程而生，它不同于快捷方法，过程方法返回从数据库来的数据，并由你决定如何处理。很合适数据验证、过滤和对数据库多次操作的场景。全局钩子的行为发生了一些变化，在整个过程流程中只会执行一次。（注意，流程结束时，必须 return 出返回前端的数据）
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -899,7 +937,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
+        <th>Argument</th>
         
 
         
@@ -922,6 +960,7 @@
             
                 
 <span class="param-type">string</span>
+
 
 
             
@@ -963,6 +1002,7 @@
 <span class="param-type">asyncFunction</span>
 
 
+
             
             </td>
 
@@ -989,31 +1029,24 @@
     </tbody>
 </table>
 
+    
 
-
-
-
-
+    
 <dl class="details">
-
     
 
-    
-    <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>1.0.0</li></ul></dd>
-    
+	
 
-    
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
 
-    
-
-    
-
-    
-
-    
-
-    
+	
 
     
 
@@ -1023,35 +1056,42 @@
 
     
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line87">line 87</a>
-    </li></ul></dd>
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
 </dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 
 
 <dl>
@@ -1063,44 +1103,42 @@
 <span class="param-type">function</span>
 
 
+
     </dd>
 </dl>
 
+
+        
+
     
-
-
-
-
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="rawScope"><span class="type-signature"></span>rawScope(scopeNames)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        组合一个或多个 sequelize 作用域（一层简单的封装）
+    </div>
+    
+
+    
 
     
 
     
-    <h4 class="name" id="rawScope"><span class="type-signature"></span>rawScope<span class="signature">(&hellip;scopeNames)</span><span class="type-signature"> &rarr; {<a href="Handle.html">Handle</a>}</span></h4>
     
+        <h5>Parameters:</h5>
+        
 
-    
-
-
-
-<div class="description">
-    组合一个或多个 sequelize 作用域（一层简单的封装）
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1110,7 +1148,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
+        <th>Argument</th>
         
 
         
@@ -1134,6 +1172,7 @@
 |
 
 <span class="param-type">function</span>
+
 
 
             
@@ -1160,31 +1199,24 @@
     </tbody>
 </table>
 
+    
 
-
-
-
-
+    
 <dl class="details">
-
     
 
-    
-    <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>1.0.0</li></ul></dd>
-    
+	
 
-    
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
 
-    
-
-    
-
-    
-
-    
-
-    
+	
 
     
 
@@ -1194,42 +1226,49 @@
 
     
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line68">line 68</a>
-    </li></ul></dd>
-    
+	
 
-    
+	
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>defaultScope scope</li>
-        </ul>
-    </dd>
-    
+	
 
-    
+	
+
+	
+
+
+
+	
+
+	
+
+	
+	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
+	<dd class="tag-see">
+		<ul>
+			<li>defaultScope scope</li>
+			</ul>
+	</dd>
+	
+
+	
 </dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 
 
 <dl>
@@ -1241,44 +1280,42 @@
 <span class="param-type"><a href="Handle.html">Handle</a></span>
 
 
+
     </dd>
 </dl>
 
+
+        
+
     
-
-
-
-
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="scope"><span class="type-signature"></span>scope(scopes)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        组合一个或多个方法作用域（仅作用于接下来第一次使用的方法）
+    </div>
+    
+
+    
 
     
 
     
-    <h4 class="name" id="scope"><span class="type-signature"></span>scope<span class="signature">(&hellip;scopes)</span><span class="type-signature"> &rarr; {<a href="Handle.html">Handle</a>}</span></h4>
     
+        <h5>Parameters:</h5>
+        
 
-    
-
-
-
-<div class="description">
-    组合一个或多个方法作用域（仅作用于接下来第一次使用的方法）
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
+<table class="params table table-striped">
     <thead>
     <tr>
         
@@ -1288,7 +1325,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
+        <th>Argument</th>
         
 
         
@@ -1312,6 +1349,7 @@
 |
 
 <span class="param-type">function</span>
+
 
 
             
@@ -1338,31 +1376,24 @@
     </tbody>
 </table>
 
+    
 
-
-
-
-
+    
 <dl class="details">
-
     
 
-    
-    <dt class="tag-since">Since:</dt>
-    <dd class="tag-since"><ul class="dummy"><li>1.0.0</li></ul></dd>
-    
+	
 
-    
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
 
-    
-
-    
-
-    
-
-    
-
-    
+	
 
     
 
@@ -1372,42 +1403,49 @@
 
     
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line54">line 54</a>
-    </li></ul></dd>
-    
+	
 
-    
+	
 
-    
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>defaultScope rawScope</li>
-        </ul>
-    </dd>
-    
+	
 
-    
+	
+
+	
+
+
+
+	
+
+	
+
+	
+	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
+	<dd class="tag-see">
+		<ul>
+			<li>defaultScope rawScope</li>
+			</ul>
+	</dd>
+	
+
+	
 </dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
+    
+    <h5>Returns:</h5>
+    
+            
 
 
 <dl>
@@ -1419,45 +1457,48 @@
 <span class="param-type"><a href="Handle.html">Handle</a></span>
 
 
+
     </dd>
 </dl>
 
+
+        
+
     
-
-
-
-
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="toggle"><span class="type-signature"></span>toggle()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        TODO: 需重写
+    </div>
+    
+
+    
 
     
 
     
-    <h4 class="name" id="toggle"><span class="type-signature"></span>toggle<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
-
-
-
-<div class="description">
-    TODO: 需重写
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
 <dl class="details">
+    
+
+	
+
+	
+
+	
 
     
 
@@ -1467,83 +1508,75 @@
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line120">line 120</a>
-    </li></ul></dd>
-    
+	
 
-    
+	
 
-    
-
-    
+	
 </dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
-
-
-
-
-
-
-
-
-
+    
+</dd>
 
         
             
+<hr>
+<dt>
+    <h4 class="name" id="transaction"><span class="type-signature"></span>transaction()</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        TODO: 未实现（事务）
+    </div>
+    
+
+    
 
     
 
     
-    <h4 class="name" id="transaction"><span class="type-signature"></span>transaction<span class="signature">()</span><span class="type-signature"></span></h4>
     
 
     
-
-
-
-<div class="description">
-    TODO: 未实现（事务）
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
 <dl class="details">
+    
+
+	
+
+	
+
+	
 
     
 
@@ -1553,54 +1586,44 @@
 
     
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
+	
 
-    
 
-    
 
-    
+	
 
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line134">line 134</a>
-    </li></ul></dd>
-    
+	
 
-    
+	
 
-    
-
-    
+	
 </dl>
 
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
 
+    
+</dd>
 
-
-
-
-
-
-
-
-
-
-        
+        </dl>
     
 
     
@@ -1613,19 +1636,132 @@
 
 
 
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
 </div>
 
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Handle.html">Handle</a></li><li><a href="Include.html">Include</a></li></ul>
-</nav>
 
-<br class="clear">
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Aug 04 2018 14:37:03 GMT+0800 (中国标准时间)
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
+	
+		on 2018-08-04T14:56:34+08:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
 </footer>
 
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
 </body>
 </html>
