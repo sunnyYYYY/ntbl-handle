@@ -19,7 +19,7 @@
     "systemName"      : "DocStrap",
     "footer"          : "",
     "navType"         : "vertical",
-    "theme"           : "Flatly",
+    "theme"           : "flatly",
     "linenums"        : true,
     "collapseSymbols" : false,
     "inverseNav"      : true
