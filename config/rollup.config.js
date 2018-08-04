@@ -10,8 +10,8 @@ const banner =
   ' */'
 
 const getConfig = format => {
-  const min = format[0]
-  if (min === '@') format = format.substring(1)
+  const min = format[0] === '@'
+  if (min) format = format.substring(1)
 
   return {
     input: 'src/index.js',
