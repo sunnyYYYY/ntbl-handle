@@ -1,6 +1,7 @@
 import {getOp, getRequestData, mixinScope, getProxyFunNames} from './utils'
 import Include from "./inclue"
 import Base from './interface'
+import {sequelize} from "../../models/as-venus"
 
 /**
  * Handle.js，
@@ -11,7 +12,6 @@ import Base from './interface'
  * @param {Model} model - sequelize 的模型实例
  * @param {object} [options={}] - 选项对象
  * @param {Mock} [options.mock=null] - mock 库，以启用 Handle.prototype.mock 方法
- * @param {Sequelize} [sequelize=null] - Sequelize 实例，以启用事务方法
  * @param {function} [options.before(data, ctx, next)] - 全局钩子。before 钩子在数据库操作之前执行。（注意，全局钩子 before 与快捷方法的 before 函数行为一致，但 before 函数在 全局钩子 before 之后调用，可能会发生覆盖。）
  * @param {function} [options.after(result, ctx, next)] - 全局钩子。 after 钩子在数据库操作之后执行（注意，情况和全局钩子 before 相同）
  * @param {function} [options.data(err, data, ctx, next)] - 全局钩子。data 钩子可以在返回数据到前端之前和捕获异常之后做一些处理。
@@ -117,14 +117,20 @@ class Handle extends Base{
    * TODO: 需重写
    */
   toggle (...args) {
-    return async (ctx, next) => {
-      const result = await this.__base('post', 'findOne', ...args)(ctx, next)
-      if (result) {
-        await this.__base('post', 'destroy', ...args)(ctx, next)
-      } else {
-        await this.__base('post', 'create', ...args)(ctx, next)
-      }
-    }
+    return this.process(async function (d) {
+      const res = await this.rawFindOne(...args)
+      return res
+        ? this.rawDestroy(...args)
+        : this.rawCreate()
+    })
+  }
+
+  async rawToggle (...args) {
+    const res = await this.rawFindOne(...args)
+    console.log(res, args)
+    return res
+      ? this.rawDestroy(...args)
+      : this.rawCreate()
   }
 
   /**
@@ -250,16 +256,18 @@ class Handle extends Base{
    * @returns {Promise<void>}
    * @private
    */
-  async __processBase(funcName, scopes, d, o) {
-    if (!o) {o = d; d = null}
+  async __processBase(funcName, scopes, o, d) {
 
-    const data = this._data
+    let data = this._data
     // 生成模型方法的选项对象并混合作用域
     let op = getOp(o, data)
     op = mixinScope(data, op, this._defaultScopes, scopes)
-    console.log(op)
     // 根据...
-    op = d ? [d, op] : [op]
+    if (d) data = d
+    const func = this.model[funcName]
+    let len = func.length
+    op = len === 1 ? [op] : len === 2 ? [data, op] : []
+    return await this.model[funcName](...op)
     return await this.model[funcName](...op)
   }
 }
