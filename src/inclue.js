@@ -20,8 +20,9 @@ class Include {
   add (name, f) {
     //TODO: 让关联函数接受 request body data
     const maps = this.__maps
-    if (typeof f !== 'function') f = () => f
-    maps[name] = f.bind(maps)
+    let fn
+    if (typeof f !== 'function') fn = () => f
+    maps[name] = fn.bind(maps)
     return this
   }
 
@@ -67,13 +68,10 @@ class Include {
           _create(_v, d.include)
         }
       }
-      return ret
+      return {include: ret}
     })(args)
+
   }
-
-
-
-
 }
 
 
