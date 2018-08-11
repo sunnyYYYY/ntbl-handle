@@ -1,3 +1,5 @@
+import merge from 'merge'
+
 /**
  * 生成模型方法的选项对象，为了支持 where 子句的快捷写法
  *
@@ -16,7 +18,7 @@ export let getOp = (o, data, ctx, next) => {
     return {
       where: o.reduce((ret, res) => {
         if (typeof res === 'string') ret[res] = data[res]
-        if (Array.isArray(res)) ret[res[0]] = /^@/.test(res[1]) ? data[res[1].slice(1)] : res[1]
+        else if (Array.isArray(res)) ret[res[0]] = /^@/.test(res[1]) ? data[res[1].slice(1)] : res[1]
         return ret
       }, {})
     }
@@ -40,8 +42,17 @@ export let getRequestData = (method, ctx) => {
       : {}
 }
 
-import merge from 'merge'
 
+/**
+ * 混合作用域
+ *
+ * @param d
+ * @param target
+ * @param defaultScope
+ * @param scopes
+ * @returns {*}
+ * @private
+ */
 export let mixinScope = (d, target, defaultScope, scopes) => {
   let scopesAll = defaultScope.concat(scopes)
   if (!scopesAll.length) return target
@@ -53,6 +64,14 @@ export let mixinScope = (d, target, defaultScope, scopes) => {
   return merge.recursive(true, target, ...result)
 }
 
+/**
+ * 首字母大写
+ *
+ * @param str
+ * @returns {string}
+ * @private
+ */
+export let initialCap = str => str[0].toUpperCase() + str.substring(1)
 
 /**
  * 需要被代理的方法名对象
@@ -60,7 +79,7 @@ export let mixinScope = (d, target, defaultScope, scopes) => {
  * @type {{get: string[], post: string[]}}
  * @private
  */
-export let getProxyFunNames = {
+export let proxyNames = {
   get: [
     'findOne',
     'findAll',
