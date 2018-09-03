@@ -22,7 +22,7 @@ const getConfig = format => {
       name,
     },
     plugins: [].concat(min && terser()),
-    external: ['merge'],
+    // external: ['merge'],
   }
 }
 
