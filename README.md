@@ -1,12 +1,20 @@
+
 # Handle.js
 
 Handle.js，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
- 
+
 [api 文档](https://yeshimei.github.io/Handle.js/)。
- 
+
 # Usage
 
+`Handle.js` 依赖 `merge` 库，使用前需先安装 `merge`。
+
+```
+npm i merge --save
+```
+
 ```javascript
+// 导入 Handle
 // 导入 sequelize 模型
 import { article } from '../models/db'
 
@@ -84,8 +92,8 @@ Handle.js 代理了部分 sequelize 模型方法，以下：
 
 article.findOne('id')
 // 内部将替换成
-// { 
-//   where: { id:  d.id } 
+// {
+//   where: { id:  d.id }
 // }
 //
 
@@ -99,11 +107,11 @@ GET 请求下，`d` 为 `ctx.query` 对象。POST 请求下，`d` 为 `ctx.reque
 
 article.findOne(['id', 'uid'])
 // 内部将替换成
-// { 
-//   where: { 
+// {
+//   where: {
 //     id:  d.id,
-//     uid: d.uid  
-//  } 
+//     uid: d.uid
+//  }
 // }
 //
 ```
@@ -113,11 +121,11 @@ article.findOne(['id', 'uid'])
 ```javascript
 article.findOne(['id', ['uid': 1]])
 // 内部将替换成
-// { 
-//   where: { 
+// {
+//   where: {
 //     id:  d.id,
-//     uid: 1  
-//  } 
+//     uid: 1
+//  }
 // }
 //
 ```
@@ -127,11 +135,11 @@ article.findOne(['id', ['uid': 1]])
 ```javascript
 article.findOne([['id', '@aid'], ['uid', 1]])
 // 内部将替换成
-// { 
-//   where: { 
+// {
+//   where: {
 //     id:  d.aid,
 //     uid: 1
-//  } 
+//  }
 // }
 //
 ```
@@ -158,11 +166,11 @@ article.findAll(d => {
   const count = d.count || 5
   const page = d.page || 0
   return {
-  
+
     where: {
       uid: d.uid
     },
-    
+
     limit: count,
     offset: page * count
   }
@@ -204,7 +212,7 @@ articleStar.process(async function (d) {
   const {count = 5, page = 0, uid} = d
 
   const res = await this.rawFindAll({
-    
+
     include: [
       {
         // 关联查询文章数据
@@ -271,7 +279,7 @@ articleStar.process(async function (d) {
   const res = await this
     .scope(pagination, include)
     .rawFindAll('uid')
-    
+
   return res && res.map(d => d.article)
 }),
 ```
@@ -322,7 +330,7 @@ articleStar.process(async function (d) {
 
 `transaction` 是通过 `process` 简单的对 sequelize 原生事务的封装。在使用上，和 `process` 完全一致。
 
-```
+```javascript
 articleStar.transaction(async function (d) {
   /** 事务相关的处理 */
   return /** 返回处理后的数据 */
@@ -331,7 +339,27 @@ articleStar.transaction(async function (d) {
 
 # 钩子
 
-（暂无）
+`Handle` 在选项对象里提供了三个全局钩子 `before` 、`after`， `data`。
+
+
+```javascript
+new Handle(model, {
+    // before 钩子在数据库操作之前执行
+    before (data, ctx, next) {
+
+    }
+    // after 钩子在数据库操作之后执行
+    after (result, ctx, next) {
+
+    }
+    // data 钩子可以在返回数据到前端之前和捕获异常之后做一些处理
+    data (err, result, ctx, next) {
+
+    }
+})
+```
+
+如果你设置了全局钩子，每个快捷方法都会执行这些钩子，而过程方法则会忽略这些钩子，`process` 会在调用回调前执行 `before` 调用回调后执行 `after` 和 `data`。
 
 # Mock 支持
 
