@@ -1,5 +1,6 @@
 import {getOp, getRequestData, mixinScope, proxyNames, initialCap} from './utils'
 import Include from "./inclue"
+import Scopes from './scopes'
 
 /**
  * Handle.js，
@@ -146,34 +147,6 @@ class Handle {
     return this.bulkCreate(Mock.mock(rule).data, {})
   }
 
-  /**
-   * 查询数据是否存在，存在则删除，不存在则创建
-   *
-   * @param args
-   * @returns {Function}
-   */
-  toggle (...args) {
-    return this.process(async function (d) {
-      const res = await this.rawFindOne(...args)
-      return res
-        ? this.rawDestroy(...args)
-        : this.rawCreate()
-    })
-  }
-
-  /**
-   * 查询数据是否存在，存在则删除，不存在则创建
-   *
-   * @param args
-   * @returns {Promise<*>}
-   */
-  async rawToggle (...args) {
-    const res = await this.rawFindOne(...args)
-    return res
-      ? this.rawDestroy(...args)
-      : this.rawCreate()
-  }
-
 
   __internal (method, name, scopes, d, options) {
     if (options == null) [d, options] = [undefined, d]
@@ -208,7 +181,6 @@ class Handle {
       ? hook(data, ctx, next)
       : data
   }
-
 }
 
 
@@ -233,5 +205,6 @@ for (let method in proxyNames) {
  * @see Include
  */
 Handle.Include = new Include()
+Handle.Scopes = Scopes
 
 export default Handle

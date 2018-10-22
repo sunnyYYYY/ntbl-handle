@@ -1,3 +1,10 @@
+```
+^ Sunny
+) 18.08.10
+? F
+```
+
+[TOC]
 
 # Handle.js
 
@@ -54,11 +61,6 @@ Handle.js 代理了部分 sequelize 模型方法，以下：
     - increment
     - decrement
 
-同时，Handle.js 还内置以下模型方法：
-
-- POST 请求
-    - toggle
-
 
 以上所有模型方法统称为快捷方法，调用后生成一个 async 的 koa 中间件函数，可以直接挂载路由。此外，还提供了一套对应的过程方法，调用后仅返回原生数据，可供进一步处理。以下：
 
@@ -81,7 +83,6 @@ Handle.js 代理了部分 sequelize 模型方法，以下：
     - rawDestroy
     - rawIncrement
     - rawDecrement
-    - rawToggle
 
 ## where 子句简写
 
@@ -168,8 +169,7 @@ article.findAll(d => {
   return {
 
     where: {
-      uid: d.uid
-    },
+      uid: d.uid,
 
     limit: count,
     offset: page * count
@@ -390,6 +390,172 @@ article.mock({
 ```
 
 `mock()` 内部调用实例的 `bulkCreate()` 方法批量添加数据（注意，因为使用了原生数据入口，所以不会对数据做任何处理）
+
+
+# Scopes 工具集（测试中）
+
+`handle.js` 内置了一个 `Scopes` 工具集，帮助你快速编写复杂的接口，让你充分利用 `scope` 函数式编程所带来的优良特性。
+
+
+```js
+const Scopes = Handle.Scopes
+const {option, where, pagination, fuzzyQuery, it} = Scopes
+
+article
+    .scope(
+      // 可选字段
+      // 通过 id 查询
+      // 通过别名的 user_id 查询 uid 字段
+      option('id', ['uid', '@user_id']),
+      // 并且只返回 normalize = true 的数据
+      where([normalize: true]),
+      // 开启分页
+      pagination,
+      // 开启模糊查询
+      fuzzyQuery,
+    )
+    .findAll()
+
+// 另外通过 it 前置测试方法，可以在同一个接口中轻松实现针对不同开关的定制化功能
+
+article
+    .scope(
+        // user 和 admin 是内部用于判断是管理员还是用户身份的标识
+        // 管理员，可以查询任何数据
+        it('admin', where('id'))
+        // 普通用户只能查询自己的数据
+        it('user', where('id', 'uid'))
+        // 当 comment = true 时，带上评论数据
+        it('comment', () => Inclue.create('comment'))
+    )
+    .findAll()
+```
+
+**where**
+
+> where 子句的快捷写法
+
+```js
+/* {
+     id: d.id,
+     uid: d.user_id
+     recomment: true
+   }
+*/
+where('id', ['uid', '@user_id'] /* 别名 */, ['recomment', true] /* 默认值 */)
+
+// 或者，使用对象语法
+
+where({
+  id: '@id',
+  uid: '@user_id'
+  recomment: true,
+})
+```
+
+**option**
+
+> 可选字段
+
+用法与 **where** 一致。两者都是 **where 子句的简写方法**， 区别是 **option** 方法 指定的字段当调用接口时未指定是不会出现在 where 子句中的，而 **where** 方法是赋值一个未定义。
+
+**fuzzyQuery(field = 'name', alias?)**
+
+> 模糊查询
+
+```
+/*
+  {
+    name: {
+      like: '%'' + d.name + '%''
+    }
+  }
+*/
+fuzzyQuery('name')
+
+// 或者，起一个别名
+
+/*
+  {
+    name: {
+      like: '%'' + d.username + '%''
+    }
+  }
+*/
+fuzzyQuery('name', 'username')
+```
+
+**fuzzyQueryLeft(field = 'name', alias?)**
+
+> 左匹配模糊查询
+
+**fuzzyQueryRight(field = 'name', alias?)**
+
+> 右匹配模糊查询
+
+**pagination(page = 0, count = 5)**
+
+> 分页
+
+```
+/*
+  {
+    limit: d.count,
+    offset: d.page * d.count
+  }
+*/
+
+// page 页数
+// count 每页的数量
+pagination()
+```
+
+**order**
+
+> 排序
+
+```
+// 按字段的更新日期的降序排序
+order([['updateAt', 'DESC']])
+```
+
+**includes**
+
+> 添加一个或多个关联（如果存在层级复杂的关联，Include 更合适）
+
+**set**
+
+> 设置或修改 d 对象 (用法和 where 一致)
+
+**del(filed, ...)**
+
+> 删除 d 对象的字段
+
+**merge**
+
+> 深度合并多个对象或函数
+
+**it**
+
+> 前置断言
+
+```js
+// 当 field = true 执行 f1，否则 f2
+// 相当于一个条件语句
+it(field, f1, f2)
+// field 可以有多个，每个可以是字符串、数组和函数
+// 当 comment 为真时成立（包含隐式转换为）
+it('comment')
+// more = 2 时成立
+it([['more': 2]])
+// 当 more > 3 时成立
+it(d => d.more > 3)
+
+// 另外，f1 和 f2 参数接受一个函数或一组函数
+it('commment', f1, [f2, f3, f4])
+```
+
+
 
 
 # 一些差异性的问题
