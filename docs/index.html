@@ -40,7 +40,7 @@
 			<li class="dropdown">
 				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="global.html#del">del</a></li><li><a href="global.html#fuzzyQuery">fuzzyQuery</a></li><li><a href="global.html#fuzzyQueryLeft">fuzzyQueryLeft</a></li><li><a href="global.html#fuzzyQueryRight">fuzzyQueryRight</a></li><li><a href="global.html#includes">includes</a></li><li><a href="global.html#it">it</a></li><li><a href="global.html#merge">merge</a></li><li><a href="global.html#option">option</a></li><li><a href="global.html#order">order</a></li><li><a href="global.html#pagination">pagination</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#where">where</a></li>
+					<li><a href="global.html#defaultScope">defaultScope</a></li><li><a href="global.html#fuzzyQuery">fuzzyQuery</a></li><li><a href="global.html#includes">includes</a></li><li><a href="global.html#merge">merge</a></li><li><a href="global.html#mock">mock</a></li><li><a href="global.html#order">order</a></li><li><a href="global.html#pagination">pagination</a></li><li><a href="global.html#process">process</a></li><li><a href="global.html#rawScope">rawScope</a></li><li><a href="global.html#scope">scope</a></li><li><a href="global.html#transaction">transaction</a></li><li><a href="global.html#where">where</a></li>
 				</ul>
 			</li>
 			
@@ -93,10 +93,9 @@
 
 
     <section class="readme-section">
-        <article><h1>Handle.js</h1><p>Handle.js，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。</p>
-<p><a href="https://yeshimei.github.io/Handle.js/">api 文档</a>。</p>
-<h1>Usage</h1><p><code>Handle.js</code> 依赖 <code>merge</code> 库，使用前需先安装 <code>merge</code>。</p>
-<pre class="prettyprint source"><code>npm i merge --save</code></pre><pre class="prettyprint source lang-javascript"><code>// 导入 Handle
+        <article><h1>Handle.js</h1><p>Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。</p>
+<p><a href="https://yeshimei.github.io/Handle.js/">API Documentation</a> | <a href="https://github.com/yeshimei/Handle.js">GitHub</a> | <a href="https://www.npmjs.com/package/handle.js">NPM</a></p>
+<h2>Installation</h2><pre class="prettyprint source"><code>npm i handle.js --save</code></pre><h2>Usage</h2><pre class="prettyprint source lang-javascript"><code>import Handle from 'handle.js'
 // 导入 sequelize 模型
 import { article } from '../models/db'
 
@@ -107,82 +106,101 @@ const article = new Handle(article)
 const find = article.findAll()
 
 // 绑定到路由
-router.get('/article/find', find)</code></pre><h1>开始</h1><h2>实例的模型方法一览</h2><p>Handle.js 代理了部分 sequelize 模型方法，以下：</p>
+router.get('/article/find', find)</code></pre><h2>核心</h2><p>handle 本质上只是一个包装了接口逻辑中获取数据、try catch 语句和调用 sequelize 接口的容器，在此基础上提供了两套调用方法——快捷方法和过程方法，分别用于单步与多步操作处理。</p>
+<p>快捷方法返回一个 async 函数，可挂载至路由。</p>
+<pre class="prettyprint source lang-javascript"><code>// article 是 Handle 的实例
+// 这个接口会返回 article 模型的所有数据
+router.get('/article/find', article.findAll())</code></pre><p>在内部它直接调用 <code>ctx.body</code> 向前端返回数据并结束调用，只访问一次数据库。</p>
+<p>过程方法返回数据（注意，不是 async 函数），一般需要结合 <code>process</code> 包装函数使用。</p>
+<pre class="prettyprint source lang-javascript"><code>// 由于内部绑定实例的 this 到了回调函数，所以不推荐使用箭头函数
+const find = artcile.process(async function (d) {
+    return await this.rawFindAll()
+})
+
+router.get('article/find', find)</code></pre><p>以上两段代码做了同样的事情。过程方法 和 <code>process</code> 其实只是上述提到过的 Handle 原理的拆分，快捷方法负责 sequelize 调用，<code>process</code> 负责获取数据和 try catch。如此一来，你就能在 <code>process</code> 多次访问数据库，并且轻松过滤、重组和整合数据。</p>
+<pre class="prettyprint source lang-javascript"><code>const find = artcile.process(async function (d) {
+    // 查询用户
+    const userData = await u, findOne(['username', 'password'])
+    // 查询当前用户的文章
+    const result = await this.rawFindAll([['id', userData.id]])
+    // 仅返回被推荐的文章
+    return result.filter(e => e.type === 'recommend')
+})</code></pre><p>当然，你可以通过关联和 where 子句把三步合成一步，但这个例子强有力的证实了 <code>process</code> 应该干些什么。</p>
+<blockquote>
+<p>在旧版本中，并没过程方法，每个快捷方法都额外接受两个回调函数，一个在访问数据库之前，一个在访问数据库之后，但是它却让代码丑出了新高度，更可怕的是我竟然没提供 async/await，让回调地狱里的恶魔差点把我吃了。</p>
+</blockquote>
+<p>Handle 还走出了重要的一步，就是对选项对象可复用性的思考，比如你有一个分页逻辑（你一定写过），在 Handle 中你可以把它封装成一个的偏函数。</p>
+<pre class="prettyprint source lang-javascript"><code>// 为什么是偏函数？
+// 因为我给分页预留了默认的配置项
+function pagination (defaultCount = 5, defaultPage = 0) => {
+  return d => {
+    const count = ~~d.count || defaultCount
+    const page = ~~d.page || defaultPage
+    return {
+      limit: count,
+      offset: page * count
+    }
+  }
+}</code></pre><p>然后把它放进 <code>scope</code> 中即可。</p>
+<pre class="prettyprint source lang-javascript"><code>article
+    .scope(pagination(10))
+    .findAll()</code></pre><p>另外, Handle 为用户做了更多的事情，在 <code>scope</code> 的基础上提供了一个工具集，涵盖了一些常用的封装，让你真的就像在搭积木，轻轻松松就实现了一个复杂的接口。handle 还提供了一个全局管理关联数据的静态类，并提供了对 Mock 的支持，并致力于让所有的事情变得简单有序。值得一提的是 Handle 并不依赖 Koa，过程方法可以让它用在 express 项目中或者 websocket 应用中，Handle 更准确说是一个 sequelize 的包装库。</p>
+<h1>加载器</h1><p>加载器让 sequelize 模型文件的导入和 Handle 实例化合二为一。</p>
+<pre class="prettyprint source lang-javascript"><code>// 之前的写法
+
+const Article sequelize.import(__dirname + './article')
+const article = new Handle(Article)
+
+// 使用加载器后
+// 注意，你仍然需要把 sequelize 传入
+// 内部使用 sequelize.import() 方法加载模型文件
+const article = Handle.load(sequelize, __dirname + './article')</code></pre><p>另外，还支持批量加载，一劳永逸。</p>
+<pre class="prettyprint source lang-javascript"><code>// 遍历指定目录中所有的 .js 文件（默认忽略 index.js 和以 _ 开头的文件）并加载
+// 返回一个以文件名为 key ， Handle 实例为 value 的对象
+const db = Handle.loadAll(sequelize, __dirname, {
+    // 除了 Handle 构造器选项对象外，
+    // 还支持匹配规则（支持 glob 写法）
+    rule: '/**/!(index|_)*.js',  // 默认
+})</code></pre><h1>实例方法</h1><p>Handle 代理了部分 sequelize 模型方法，具体使用请参考 <a href="http://docs.sequelizejs.com/class/lib/model.js~Model.html">Reference/Model</a></p>
 <ul>
-<li>GET 请求<ul>
-<li>findOne</li>
-<li>findAll</li>
-<li>findById</li>
-<li>findOrCreate</li>
-<li>findAndCountAll</li>
-<li>findAndCount</li>
-<li>findCreateFind</li>
-<li>count</li>
-<li>max</li>
-<li>min</li>
-<li>sun</li>
+<li><strong>GET：</strong> findOne, findAll, findById, findOrCreate, findAndCountAll, findAndCount, findCreateFind, count, max, min, sun</li>
+<li><strong>POST:</strong> create, bulkCreate, update, destroy, increment, decrement</li>
 </ul>
-</li>
-<li>POST 请求<ul>
-<li>create</li>
-<li>bulkCreate</li>
-<li>update</li>
-<li>destroy</li>
-<li>increment</li>
-<li>decrement</li>
-</ul>
-</li>
-</ul>
-<p>同时，Handle.js 还内置以下模型方法：</p>
-<ul>
-<li>POST 请求<ul>
-<li>toggle</li>
-</ul>
-</li>
-</ul>
-<p>以上所有模型方法统称为快捷方法，调用后生成一个 async 的 koa 中间件函数，可以直接挂载路由。此外，还提供了一套对应的过程方法，调用后仅返回原生数据，可供进一步处理。以下：</p>
-<ul>
-<li>GET 请求<ul>
-<li>rawFindOne</li>
-<li>rawFindAll</li>
-<li>rawFindById</li>
-<li>rawFindOrCreate</li>
-<li>rawFindAndCountAll</li>
-<li>rawFindAndCount</li>
-<li>rawFindCreateFind</li>
-<li>rawCount</li>
-<li>rawMax</li>
-<li>rawMin</li>
-<li>rawSun</li>
-</ul>
-</li>
-<li>POST 请求<ul>
-<li>rawCreate</li>
-<li>rawBulkCreate</li>
-<li>rawUpdate</li>
-<li>rawDestroy</li>
-<li>rawIncrement</li>
-<li>rawDecrement</li>
-<li>rawToggle</li>
-</ul>
-</li>
-</ul>
-<h2>where 子句简写</h2><ol>
-<li>字符串语法</li>
+<p>以上所有模型方法统称为快捷方法，调用后生成一个 async 函数，可以直接挂载路由。此外，还提供了一套对应的过程方法，调用后仅返回原生数据，可供进一步处理。</p>
+<p>rawFindOne, rawFindAll, rawFindById, rawFindOrCreate, rawFindAndCountAll, rawFindAndCount, rawFindCreateFind, rawCount, rawMax, rawMin, rawSun，rawCreate, rawBulkCreate, rawUpdate, rawDestroy, rawIncrement, rawDecrement</p>
+<h2>修改默认的请求方法</h2><p>Handle 从三个层级上提供自定义实例方法与请求方法的映射关系。</p>
+<pre class="prettyprint source lang-javascript"><code>// 整个应用
+// 不要传给 proxy 一个对象，会覆盖掉默认值
+Handle.defaults.proxy.findAll.method = 'post'
+
+// 实例
+// 这个可以，因为你它是一个空对象
+article.options.proxy = {
+  findAll: {
+    method: 'post'
+  }
+}
+
+// 方法
+article
+  .method('post')
+  .findAll()</code></pre><p>注意，三者的优先级：方法 &gt; 实例 &gt; 整个应用</p>
+<h2>where 子句简写</h2><p>所有实例方法都支持 where 子句的简写，包括同名、多条件同名、提供默认值、别名，可选值和 Op。帮助你快速编写一些简单的接口逻辑，它即简单又强大。</p>
+<ol>
+<li>同名</li>
 </ol>
-<pre class="prettyprint source lang-javascript"><code>
-article.findOne('id')
+<pre class="prettyprint source lang-javascript"><code>article.findOne('id')
 // 内部将替换成
 // {
 //   where: { id:  d.id }
 // }
 //
-</code></pre><p>GET 请求下，<code>d</code> 为 <code>ctx.query</code> 对象。POST 请求下，<code>d</code> 为 <code>ctx.request.body</code> 对象（默认为 x-www-form-urlencoded 类型）。</p>
+</code></pre><p>GET 请求下，<code>d</code> 为 <code>ctx.query</code> 对象。POST 请求下，<code>d</code> 为 <code>ctx.request.body</code> 对象（默认为 x-www-form-urlencoded 类型）。简单说，就是前端发送到后端的数据对象。</p>
 <ol start="2">
-<li>多条件</li>
+<li>多条件同名</li>
 </ol>
 <pre class="prettyprint source lang-javascript"><code>
-article.findOne(['id', 'uid'])
+article.findOne('id', 'uid')
 // 内部将替换成
 // {
 //   where: {
@@ -193,7 +211,7 @@ article.findOne(['id', 'uid'])
 //</code></pre><ol start="3">
 <li>提供默认值</li>
 </ol>
-<pre class="prettyprint source lang-javascript"><code>article.findOne(['id', ['uid': 1]])
+<pre class="prettyprint source lang-javascript"><code>article.findOne('id', ['uid': 1])
 // 内部将替换成
 // {
 //   where: {
@@ -204,7 +222,7 @@ article.findOne(['id', 'uid'])
 //</code></pre><ol start="4">
 <li>别名</li>
 </ol>
-<pre class="prettyprint source lang-javascript"><code>article.findOne([['id', '@aid'], ['uid', 1]])
+<pre class="prettyprint source lang-javascript"><code>article.findOne(['id', '@aid'], ['uid', 1])
 // 内部将替换成
 // {
 //   where: {
@@ -212,7 +230,79 @@ article.findOne(['id', 'uid'])
 //     uid: 1
 //  }
 // }
-//</code></pre><h2>更强大的函数式</h2><p>函数式下支持所有 sequelize 模型选项中合法的选项。（具体请参考 <a href="http://docs.sequelizejs.com/class/lib/model.js~Model.html">Model</a>）</p>
+//</code></pre><ol start="5">
+<li>可选值</li>
+</ol>
+<pre class="prettyprint source lang-javascript"><code>article.findOne('uid', '!id')
+// 内部将替换成
+// {
+//   where: {
+//     id:  d.id,   // 注意，只有当 d 中存在 id 才会有这一行
+//     uid: d.uid
+//  }
+// }
+//</code></pre><blockquote>
+<p><strong>条件和可选值的区别？</strong>
+当 d 中不存在指定的值时。条件语法中默认给一个 undefiend（字段仍然会用于查询数据库）。而可选值语法中，则是根本不会出现在 where 子句中。</p>
+</blockquote>
+<ol start="6">
+<li>Op</li>
+</ol>
+<p>Op 语法支持 Sequelize.op 中所有的条件。</p>
+<pre class="prettyprint source lang-javascript"><code>article.findOne(['id $gt', 10], 'uid !=')
+// 内部将替换成
+// {
+//   where: {
+//     id: {
+//        gt: 10
+//     },
+//     uid: {
+//       ne: d.uid
+//     }
+//  }
+// }
+//</code></pre><p>以上所有语法都可以互相组合，但你需要了解一些约束：</p>
+<ul>
+<li>别名语法（<code>@</code>） 只能用于数组中的第二个元素上</li>
+<li>可选值语法（<code>!</code>）不能用于数组中的第二个元素上</li>
+<li>除了默认值，所有的命名必须是一个合法的标识符</li>
+<li>在一个位置里写了多 Op 标识，只会应用第一个，不同位置的相同的 Op 标识后面会覆盖前面</li>
+</ul>
+<p>以下列出支持的 Op 标识 与  Sequelize.Op 的映射。</p>
+<pre class="prettyprint source lang-javascript"><code>let opTag = {
+    '>': 'gt',
+    '>=': 'gte',
+    '&lt;': 'lt',
+    '&lt;=': 'lte',
+    '!=': 'ne',
+    '=': 'and',
+    '$and': 'and',
+    '$or': 'or',
+    '$gt': 'gt',
+    '$gte': 'gte',
+    '$lt': 'lt',
+    '$lte': 'lte',
+    '$ne': 'ne',
+    '$eq': 'eq',
+    '$not': 'not',
+    '$between': 'between',
+    '$notBetween': 'notBetween',
+    '$in': 'in',
+    '$notIn': 'notIn',
+    '$like': 'like',
+    '$notLike': 'notLike',
+    '$iLike': 'iLike',
+    '$regexp': 'regexp',
+    '$iRegexp': 'iRegexp',
+    '$notIRegexp': 'notIRegexp',
+    '$overlap': 'overlap',
+    '$contains': 'contains',
+    '$contained': 'contained',
+    '$any': 'any',
+    '$col': 'col',
+  }</code></pre><p>一些 Op 语法需要特殊的动态值，为此，Handle 增加了数组第二个元素对函数写法的支持。</p>
+<pre class="prettyprint source lang-javascript"><code>// 模糊查询
+article.findAll(['title $like', d => `%${d.title}%`])</code></pre><h2>更强大的函数式</h2><p>函数式下支持所有 sequelize 模型选项中合法的选项。（具体请参考 <a href="http://docs.sequelizejs.com/class/lib/model.js~Model.html">Model</a>）</p>
 <pre class="prettyprint source lang-javascript"><code>article.findOne(d => ({
   where: {
     id: d.aid,
@@ -225,17 +315,15 @@ article.findOne(['id', 'uid'])
   return {
 
     where: {
-      uid: d.uid
-    },
+      uid: d.uid,
 
     limit: count,
     offset: page * count
   }
-}),</code></pre><h2>原生数据</h2><p><code>create()</code> 将自动把 <code>d</code> 作为数据增加到数据库中。</p>
+}),</code></pre><h2>原生数据（已更改）</h2><p><code>create()</code> 将自动把 <code>d</code> 作为数据增加到数据库中。</p>
 <pre class="prettyprint source lang-javascript"><code>article.create()</code></pre><p>但是，对于 <code>increment()</code> 你可能只想增加某个字段的值，你可以直接指定原生数据。</p>
 <pre class="prettyprint source lang-javascript"><code>article.increment('comment_count', 'id')</code></pre><p>注意，原生数据在内部不会做任何处理。</p>
-<h2>选项对象</h2><p>请参考 <a href="https://yeshimei.github.io/Handle.js/Handle.html">API 手册</a></p>
-<h1>过程</h1><p><code>process</code> 将一系列操作封装到一起，提供了可以验证、过滤、重组等处理数据的能力，并且非常适合非事务性的多次数据库操作等场景。通常，需要配合过程方法使用。</p>
+<h1>Process</h1><p>在核心一节中，我们介绍了过程方法的用法（多步数据库操作），那就是它的全部。现在，我们换一个方向，从抽离和封装堆叠在一起的代码中，贯穿 Handle 的几个关键特性。</p>
 <pre class="prettyprint source lang-javascript"><code>// 查询用户收藏的文章
 articleStar.process(async function (d) {
 
@@ -259,29 +347,33 @@ articleStar.process(async function (d) {
   })
   // 过滤数据，仅返回文章数据
   return res && res.map(d => d.article)
-})</code></pre><p>另外，当出现一些重复逻辑时，你也可以很方便的提取出来复用。</p>
-<h1>作用域</h1><p><code>scope</code> 是复用模型选项对象的最佳选择，它在内部使用了 <code>merge</code> 深度混合所有 <code>scope</code> 到选项对象中。外在而言，让你的代码更直观、简洁、易懂和良好的复用性，更易于重构和修改。</p>
-<p>把上面的分页逻辑封装成为一个 提供参数的 scope。</p>
+})</code></pre><blockquote>
+<p>你也许敏锐的发现了 process 提供了 d 给过程方法使用，从另一侧看，过程方法只是纯粹的调用了数据库，所以两者结合到一起就是一个可扩展版的快捷方法。</p>
+</blockquote>
+<p>process 默认为 get 请求，Handle 支持 6 种 http 标准请求方法（get/head/put/delete/post/options）</p>
+<pre class="prettyprint source lang-javascript"><code>articleStar.process('post', async function (d) {})</code></pre><h1>Scope</h1><p><code>scope</code> 是复用模型选项对象的最佳选择，它在内部使用了 <code>merge</code> 深度混合所有 <code>scope</code> 到选项对象中。外在而言，让你的代码更直观、简洁、易懂和良好的复用性，更易于重构和修改。</p>
+<p>so，把上面的分页逻辑封装成为一个提供参数的 scope。</p>
 <pre class="prettyprint source lang-javascript"><code>function pagination (defaultCount = 5, defaultPage = 0) => {
   return d => {
-    const count = d.count || defaultCount
-    const page = d.page || defaultPage
+    const count = ~~d.count || defaultCount
+    const page = ~~d.page || defaultPage
     return {
       limit: count,
       offset: page * count
     }
   }
 }</code></pre><p>然后，通过 <code>scope()</code> 方法到处复用。</p>
-<pre class="prettyprint source lang-javascript"><code>// 查询所有指定 uid 的数据，且每页返回 10 条数据
-article.scope(pagination(10)).findAll('uid')
+<pre class="prettyprint source"><code>// 查询所有指定 uid 的数据，且每页返回 10 条数据
+article.scope(pagination(10)).findAll(uid')
 // 使用 pagination 函数提供默认值
 article.scope(pagination()).findAll('uid')
 // 其实，你可以省略掉 pagination 前面的 ()
-article.scope(pagination).findAll('uid')
-
-// 同时，scope 还可以是对象
+article.scope(pagination).findAll('uid')</code></pre><p>看起来好了一些。</p>
+<pre class="prettyprint source lang-javascript"><code>// 同时，scope 还可以是对象
 articleStar.process(async function (d) {
   const include = {
+    // 这里有个小问题，
+    // 我们无法让关联数据得以复用
     include: [
       {
         model: Article,
@@ -295,8 +387,8 @@ articleStar.process(async function (d) {
     .rawFindAll('uid')
 
   return res && res.map(d => d.article)
-}),</code></pre><p><code>scope()</code> 方法合并的选项对象<strong>仅在第一次被使用的方法上有效</strong>。如果，想要让所有当前实例的模型方法都共享某些 scope ，可以通过 <code>defaultScope()</code> 添加。注意，每个 <code>scope</code> 都必须最终返回一个选项对象。</p>
-<h1>关联查询</h1><p><code>Include</code> 是 Handle.js 一个静态工具类，用于统一管理整个应用的关联数据。</p>
+}),</code></pre><p><code>scope()</code> 方法合并的选项对象<strong>仅在第一次被使用的方法上有效</strong>。如果，想要让所有当前实例的模型方法都共享某些 scope ，可以在实例上通过 <code>defaultScope()</code> 添加。==注意，每个 <code>scope</code> 都必须最终返回一个选项对象，而不是其中的一部分。==</p>
+<h1>Include</h1><p><code>Include</code> 是 Handle.js 一个静态工具类，用于统一管理整个应用的关联数据。Include 有一个有用的特性，就是通过对象嵌套指定关联数据的层次。现在，在我们复用关联数据的同时添加了一些字段过滤。</p>
 <pre class="prettyprint source lang-javascript"><code>const { Include } = Handle
 
 Include
@@ -316,13 +408,52 @@ Include
   })</code></pre><p>然后，通过 <code>Handle.create()</code> 方法，可以简单的组合已添加关联的层级关系。</p>
 <pre class="prettyprint source lang-javascript"><code>articleStar.process(async function (d) {
     const res = await this
-      .scope(pagination, Include.create({
-        article: ['user']
-      }))
+      .scope(
+        pagination,
+        Include.create({ article: ['user'] })
+      )
       .rawFindAll('uid')
     return res && res.map(d => d.article)
-  }),</code></pre><p><code>Handle</code> 在可高度复用关联数据的同时，又能以最小化、最简单的方式组织和管理。</p>
-<h1>事务</h1><p><code>transaction</code> 是通过 <code>process</code> 简单的对 sequelize 原生事务的封装。在使用上，和 <code>process</code> 完全一致。</p>
+})</code></pre><p>现在看起来就舒服多了。你也许已经看出来，可复用性体现哪里了？没错，就是通过 <code>scope</code> 你可以让每个接口轻松实现分页，你什么也不用做，只需要把一篮食材丢给 <code>scope</code> 它就会给你做出一盘香喷喷的盖浇米饭。<code>scope</code> 做了什么？很简单，它在内部深度合并了所有选项，就好像你把一个原本杂乱而负载过重的大胖子，拆分成了更小更轻快的小帅伙（这比喻有点奇怪），或者说你可以用搭积木的方式有序的易懂的（最重要是好看啊！）建筑起一座摩天大厦。而 <code>Include</code> 让你统一管理全局的关联数据并且通过简单的对象嵌套生成复杂的关联层级。</p>
+<blockquote>
+<p>另外，除了可以把对象添加到 Include，还支持函数。</p>
+</blockquote>
+<h1>Scopes Utils</h1><p><code>handle.js</code> 内置了一个 <code>Scopes</code> 工具集，封装了一些常用的接口逻辑，帮助你快速编写复杂的接口，让你充分利用 <code>scope</code> 封装所带来的优良特性。</p>
+<p>==（目前，还在积极收集和考虑高频的接口逻辑，欢迎大家提供 Scope 建议或代码片段）==</p>
+<pre class="prettyprint source lang-js"><code>const Scopes = Handle.Scopes
+const {where, pagination, fuzzyQuery} = Scopes</code></pre><p><strong>where</strong></p>
+<p>where 子句简写支持，用法与实例方法一致。</p>
+<p><strong>fuzzyQuery(field = 'name')</strong></p>
+<p>模糊查询</p>
+<pre class="prettyprint source lang-javascript"><code>article
+    .scope(fuzzyQuery('title'))
+    .findAll()
+/* 内部将替换成
+{
+    where: {
+        title: {
+            like: `%${d.title}%`
+        }
+    }
+}
+
+*/</code></pre><p>此外，还有 fuzzyQueryLeft/fuzzyQueryRight 左模糊查询和右模糊查询。</p>
+<p><strong>pagination(page = 0, count = 5)</strong></p>
+<p>分页</p>
+<ul>
+<li>page = 0：页数</li>
+<li>count = 5：每页的数量</li>
+</ul>
+<pre class="prettyprint source lang-javascript"><code>article
+    .scope(pagination(10))
+    .findAll()
+
+/*
+  {
+    limit: d.count,
+    offset: d.page * d.count
+  }
+*/</code></pre><h1>事务</h1><p><code>transaction</code> 是通过 <code>process</code> 简单的对 sequelize 原生事务的封装。在使用上，和 <code>process</code> 完全一致。</p>
 <pre class="prettyprint source lang-javascript"><code>articleStar.transaction(async function (d) {
   /** 事务相关的处理 */
   return /** 返回处理后的数据 */
@@ -357,8 +488,29 @@ article.mock({
    }
  ]
 })</code></pre><p><code>mock()</code> 内部调用实例的 <code>bulkCreate()</code> 方法批量添加数据（注意，因为使用了原生数据入口，所以不会对数据做任何处理）</p>
-<h1>一些差异性的问题</h1><p>（敬请期待）</p>
-<h1>插件系统</h1><p>（暂无）</p></article>
+<h1>一些差异性的问题</h1><p>Handle 做为中间库，不会更改 sequelize 原生用法，它只关注一件事，就是让你用最少的代码写出最复杂的接口并让代码具有良好的可读性。另外，从代码层面上引导你编写可复用的代码。</p>
+<p>但是，由于一些轮子依赖，在某些特定情况会产生一些约束，这些约束都会在这里指出，并在后续版本中解决，了解它们，可以更好的帮助你使用 Handle。</p>
+<ol>
+<li><strong>很遗憾，你无法使用 Sequelize.Op</strong>，但是可以使用字符串标识替代（但是在 v5 中会抛出一个废弃警告），原因是 Op 返回的是一个 Symbol 类型，作为对象的 key 使用时 Handle 所依赖的 <code>merger</code> 无法深度合并 Symbol，导致数据丢失。</li>
+</ol>
+<pre class="prettyprint source lang-javascript"><code>// 会丢失
+article
+  .scope({
+      where: {
+        [Op.lt]: 2
+      }
+  })
+  .findAll()
+
+// 更改为字符串语法
+
+article
+  .scope({
+      where: {
+        'it': 2
+      }
+  })
+  .findAll()</code></pre><h1>插件系统</h1><p>（暂无）</p></article>
     </section>
 
 
@@ -404,7 +556,7 @@ article.mock({
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
-		on 2018-10-22T13:06:35+08:00
+		on 2018-11-25T00:25:09+08:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

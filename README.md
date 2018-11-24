@@ -1,19 +1,19 @@
-# Handle
+# Handle.js
 
 Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
 
-[API Documentation](https://yeshimei.github.io/Handle.js/) | [GitHub]() | [NPM]()
+[API Documentation](https://yeshimei.github.io/Handle.js/) | [GitHub](https://github.com/yeshimei/Handle.js) | [NPM](https://www.npmjs.com/package/handle.js)
 
 ## Installation
 
 ```
-npm i handle --save
+npm i handle.js --save
 ```
 
 ## Usage
 
 ```javascript
-import Handle from 'handle'
+import Handle from 'handle.js'
 // 导入 sequelize 模型
 import { article } from '../models/db'
 
@@ -101,7 +101,7 @@ article
 加载器让 sequelize 模型文件的导入和 Handle 实例化合二为一。
 
 ```javascript
-// 之前
+// 之前的写法
 
 const Article sequelize.import(__dirname + './article')
 const article = new Handle(Article)
@@ -120,7 +120,7 @@ const article = Handle.load(sequelize, __dirname + './article')
 const db = Handle.loadAll(sequelize, __dirname, {
     // 除了 Handle 构造器选项对象外，
     // 还支持匹配规则（支持 glob 写法）
-    rule: '/**/!(index|_)*.js',
+    rule: '/**/!(index|_)*.js',  // 默认
 })
 ```
 
@@ -132,7 +132,7 @@ Handle 代理了部分 sequelize 模型方法，具体使用请参考 [Reference
 - **POST:** create, bulkCreate, update, destroy, increment, decrement
 
 
-以上所有模型方法统称为快捷方法，调用后生成一个 async 的 koa 中间件函数，可以直接挂载路由。此外，还提供了一套对应的过程方法，调用后仅返回原生数据，可供进一步处理。
+以上所有模型方法统称为快捷方法，调用后生成一个 async 函数，可以直接挂载路由。此外，还提供了一套对应的过程方法，调用后仅返回原生数据，可供进一步处理。
 
 rawFindOne, rawFindAll, rawFindById, rawFindOrCreate, rawFindAndCountAll, rawFindAndCount, rawFindCreateFind, rawCount, rawMax, rawMin, rawSun，rawCreate, rawBulkCreate, rawUpdate, rawDestroy, rawIncrement, rawDecrement
 
@@ -164,7 +164,7 @@ article
 ## where 子句简写
 
 
-所有实例方法都支持 where 子句的简写，包括同名、多条件同名、提供默值、别名，可选值和 Op。帮助你快速编写一些简单的接口逻辑。
+所有实例方法都支持 where 子句的简写，包括同名、多条件同名、提供默认值、别名，可选值和 Op。帮助你快速编写一些简单的接口逻辑，它即简单又强大。
 
 1. 同名
 
@@ -304,6 +304,12 @@ let opTag = {
 ```
 
 
+一些 Op 语法需要特殊的动态值，为此，Handle 增加了数组第二个元素对函数写法的支持。
+
+```javascript
+// 模糊查询
+article.findAll(['title $like', d => `%${d.title}%`])
+```
 
 ## 更强大的函数式
 
@@ -388,7 +394,7 @@ articleStar.process(async function (d) {
 
 > 你也许敏锐的发现了 process 提供了 d 给过程方法使用，从另一侧看，过程方法只是纯粹的调用了数据库，所以两者结合到一起就是一个可扩展版的快捷方法。
 
-process 默认为 get 请求，Handle 支持五种 http 标准请求方法（get/head/put/delete/post/options）
+process 默认为 get 请求，Handle 支持 6 种 http 标准请求方法（get/head/put/delete/post/options）
 
 ```javascript
 articleStar.process('post', async function (d) {})
@@ -416,7 +422,7 @@ function pagination (defaultCount = 5, defaultPage = 0) => {
 然后，通过 `scope()` 方法到处复用。
 
 
-```javascript
+```
 // 查询所有指定 uid 的数据，且每页返回 10 条数据
 article.scope(pagination(10)).findAll(uid')
 // 使用 pagination 函数提供默认值
@@ -451,12 +457,12 @@ articleStar.process(async function (d) {
 
 
 
-`scope()` 方法合并的选项对象**仅在第一次被使用的方法上有效**。如果，想要让所有当前实例的模型方法都共享某些 scope ，可以通过 `defaultScope()` 添加。==注意，每个 `scope` 都必须最终返回一个选项对象。==
+`scope()` 方法合并的选项对象**仅在第一次被使用的方法上有效**。如果，想要让所有当前实例的模型方法都共享某些 scope ，可以在实例上通过 `defaultScope()` 添加。==注意，每个 `scope` 都必须最终返回一个选项对象，而不是其中的一部分。==
 
 
 # Include
 
-`Include` 是 Handle.js 一个静态工具类，用于统一管理整个应用的关联数据。Include 还有一个还用的特性，就是通过对象嵌套指定关联数据的层次。我们在，复用关联数据同时，添加了一些属性过滤。
+`Include` 是 Handle.js 一个静态工具类，用于统一管理整个应用的关联数据。Include 有一个有用的特性，就是通过对象嵌套指定关联数据的层次。现在，在我们复用关联数据的同时添加了一些字段过滤。
 
 ```javascript
 const { Include } = Handle
@@ -497,161 +503,61 @@ articleStar.process(async function (d) {
 > 另外，除了可以把对象添加到 Include，还支持函数。
 
 
-# Scopes Utils（已更改）
+# Scopes Utils
 
-`handle.js` 内置了一个 `Scopes` 工具集，封装了一些常用的逻辑，帮助你快速编写复杂的接口，让你充分利用 `scope` 封装所带来的优良特性。
+`handle.js` 内置了一个 `Scopes` 工具集，封装了一些常用的接口逻辑，帮助你快速编写复杂的接口，让你充分利用 `scope` 封装所带来的优良特性。
+
+==（目前，还在积极收集和考虑高频的接口逻辑，欢迎大家提供 Scope 建议或代码片段）==
 
 ```js
 const Scopes = Handle.Scopes
-const {option, where, pagination, fuzzyQuery, it} = Scopes
-
-article
-    .scope(
-      // 可选字段
-      // 通过 id 查询
-      // 通过别名的 user_id 查询 uid 字段
-      option('id', ['uid', '@user_id']),
-      // 并且只返回 normalize = true 的数据
-      where([normalize: true]),
-      // 开启分页
-      pagination,
-      // 开启模糊查询
-      fuzzyQuery,
-    )
-    .findAll()
-
-// 另外通过 it 前置测试方法，可以在同一个接口中轻松实现针对不同开关的定制化功能
-
-article
-    .scope(
-        // user 和 admin 是内部用于判断是管理员还是用户身份的标识
-        // 管理员，可以查询任何数据
-        it('admin', where('id'))
-        // 普通用户只能查询自己的数据
-        it('user', where('id', 'uid'))
-        // 当 comment = true 时，带上评论数据
-        it('comment', () => Inclue.create('comment'))
-    )
-    .findAll()
+const {where, pagination, fuzzyQuery} = Scopes
 ```
 
 **where**
 
-> where 子句的快捷写法
+where 子句简写支持，用法与实例方法一致。
 
-```js
-/* {
-     id: d.id,
-     uid: d.user_id
-     recomment: true
-   }
-*/
-where('id', ['uid', '@user_id'] /* 别名 */, ['recomment', true] /* 默认值 */)
+**fuzzyQuery(field = 'name')**
 
-// 或者，使用对象语法
+模糊查询
 
-where({
-  id: '@id',
-  uid: '@user_id'
-  recomment: true,
-})
-```
-
-
-**fuzzyQuery(field = 'name', alias?)**
-
-> 模糊查询
-
-```
-/*
-  {
-    name: {
-      like: '%'' + d.name + '%''
+```javascript
+article
+    .scope(fuzzyQuery('title'))
+    .findAll()
+/* 内部将替换成
+{
+    where: {
+        title: {
+            like: `%${d.title}%`
+        }
     }
-  }
-*/
-fuzzyQuery('name')
+}
 
-// 或者，起一个别名
-
-/*
-  {
-    name: {
-      like: '%'' + d.username + '%''
-    }
-  }
 */
-fuzzyQuery('name', 'username')
 ```
 
-**fuzzyQueryLeft(field = 'name', alias?)**
-
-> 左匹配模糊查询
-
-**fuzzyQueryRight(field = 'name', alias?)**
-
-> 右匹配模糊查询
+此外，还有 fuzzyQueryLeft/fuzzyQueryRight 左模糊查询和右模糊查询。
 
 **pagination(page = 0, count = 5)**
 
-> 分页
+分页
 
-```
+- page = 0：页数
+- count = 5：每页的数量
+
+```javascript
+article
+    .scope(pagination(10))
+    .findAll()
+
 /*
   {
     limit: d.count,
     offset: d.page * d.count
   }
 */
-
-// page 页数
-// count 每页的数量
-pagination()
-```
-
-**order**
-
-> 排序
-
-```
-// 按字段的更新日期的降序排序
-order([['updateAt', 'DESC']])
-```
-
-**includes**
-
-> 添加一个或多个关联（如果存在层级复杂的关联，Include 更合适）
-
-**set**
-
-> 设置或修改 d 对象 (用法和 where 一致)
-
-**del(filed, ...)**
-
-> 删除 d 对象的字段
-
-**merge**
-
-> 深度合并多个对象或函数
-
-**it**
-
-> 前置断言
-
-```js
-// 当 field = true 执行 f1，否则 f2
-// 相当于一个条件语句
-it(field, f1, f2)
-// field 可以有多个，每个可以是字符串、数组和函数
-// 当 comment 为真时成立（包含隐式转换为）
-it('comment')
-// more = 2 时成立
-it([['more': 2]])
-// 当 more > 3 时成立
-it(d => d.more > 3)
-
-// 另外，f1 和 f2 参数接受一个函数或一组函数
-it('commment', f1, [f2, f3, f4])
 ```
 
 
@@ -727,11 +633,11 @@ article.mock({
 
 # 一些差异性的问题
 
-Handle 做为中间库，不会更改 sequelize 的原本的用法，它只关注一件事，就是让你用最少的代码写出接口并让代码具有良好的可读性。
+Handle 做为中间库，不会更改 sequelize 原生用法，它只关注一件事，就是让你用最少的代码写出最复杂的接口并让代码具有良好的可读性。另外，从代码层面上引导你编写可复用的代码。
 
-但由于一些依赖的轮子，在某些特定情况会产生一些约束，这些约束都在这里指出，了解它们，可以更好的帮助你使用 Handle。
+但是，由于一些轮子依赖，在某些特定情况会产生一些约束，这些约束都会在这里指出，并在后续版本中解决，了解它们，可以更好的帮助你使用 Handle。
 
-1. **Scope 中无法使用 Sequelize.Op** 但是可以使用字符串标识替代（但是在 v5 中会抛出一个废弃警告），原因是 Op 返回的是一个 Symbol 类型，作为对象的 key 时 Handle 所依赖的 `merget` 库无法深度合并，让 key 丢失。
+1. **很遗憾，你无法使用 Sequelize.Op**，但是可以使用字符串标识替代（但是在 v5 中会抛出一个废弃警告），原因是 Op 返回的是一个 Symbol 类型，作为对象的 key 使用时 Handle 所依赖的 `merger` 无法深度合并 Symbol，导致数据丢失。
 
 ```javascript
 // 会丢失

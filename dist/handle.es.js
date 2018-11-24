@@ -1,12 +1,11 @@
 /*!
- * handle v1.0.0
+ * handle v0.0.1
  * (c) 2017-2018 Sunny
  * Released under the MIT License.
  */
-import _merge from 'merge';
+import merge from 'merge';
 import path from 'path';
 import chalk from 'chalk';
-import { Op } from 'sequelize';
 import escapeStringRegexp from 'escape-string-regexp';
 import glob from 'glob';
 
@@ -15,7 +14,6 @@ const PATTERN_IDENTIFIER = /[A-Za-z_][A-Za-z0-9_]*/;
 let requestMethods = ['get', 'head', 'put', 'delete', 'post', 'options'];
 
 let isObj = value => Object.prototype.toString.call(value) === '[object Object]';
-let noop = () => {};
 let error = (msg, msg2 = '') => {
   console.error(chalk.bgRed(' ERROR ') + ' ' + chalk.red(msg) + (msg2 ? ' ☞ ' +  chalk.gray(msg2) : ''));
   process.exit(1);
@@ -90,7 +88,6 @@ let getOp = (o, data) => {
  */
 let getRequestData = (method, ctx) => {
   method = method.toLowerCase();
-  console.log(method);
   return method === 'get' ? ctx.query
     : method === 'post' ? ctx.request.body
       : {}
@@ -104,18 +101,20 @@ let getRequestData = (method, ctx) => {
  * @param target
  * @param defaultScope
  * @param scopes
- * @returns {*}
+ * @returns object
  * @private
  */
 let mixinScope = (d, target, defaultScope, scopes) => {
   let scopesAll = defaultScope.concat(scopes);
   if (!scopesAll.length) return target
   let result = scopesAll.map(scope => {
-    let res = typeof scope === 'function' ? scope(d) : scope;
+    if (isObj(scope)) return scope
+    let res = scope(d);
     if (typeof res === 'function') res = scope()(d);
+    else res = scope(d);
     return res
   });
-  return _merge.recursive(true, target, ...result)
+  return merge.recursive(true, target, ...result)
 };
 
 /**
@@ -160,6 +159,7 @@ let proxyNames = {
 
 
 function parseSign (a, b, source, target) {
+  if (typeof b === 'function') b = b(target);
   let key = a.match(PATTERN_IDENTIFIER);
   let optionKey = key;
   let value = b;
@@ -170,6 +170,7 @@ function parseSign (a, b, source, target) {
     optionKey = b.match(PATTERN_IDENTIFIER)[0];
     value = target[optionKey];
   }
+  
 
   // 可选项
   if (/^!/.test(a) && target[optionKey] == null) return
@@ -218,7 +219,7 @@ function parseSign (a, b, source, target) {
   }
   else {
     if (!source[key]) source[key] = {};
-    source[key][Op[arg]] = value;
+    source[key][arg] = value;
   }
 }
 
@@ -302,87 +303,12 @@ class Include {
  * @param options {string|array|object|function}
  * @returns {function(*=): {where}}
  */
-let where = options => d => getOp(options, d);
-
-
-let z = value => Array.isArray(value) ? value : [value];
-let m = (f, d) => z(f).filter(f => f => typeof f === 'function').map(f => f(d));
-let p = d => filed => {
-  if (typeof filed === 'string') return d[filed]
-  if (Array.isArray(filed)) return d[filed[0]] === filed[1]
-  if (typeof filed === 'function') filed(d);
-};
-
-/**
- * 前置条件
- *
- * @param fields
- * @param f1
- * @param f2
- * @returns {function(*=): *}
- */
-let it = (fields, f1 = noop, f2 = noop) => d => _merge.recursive(true, ...(z(fields).every(p(d)) ? m(f1, d) : m(f2, d)));
-
-/**
- * 右模糊匹配
- *
- * @param field
- * @param key
- * @returns {function(*): (*|{where: {[p: string]: undefined}})}
- */
-let fuzzyQueryRight = (field = 'name', key) => {
-  if (key == null) key = field;
-  return d => d[key] && {
-    where: {
-      [field]: {
-        'like': `${d[key]}%`
-      }
-    }
-  }
-};
+let where = (...options) => d => getOp(options, d);
 
 
 /**
- * 左模糊匹配
+ * 分页
  *
- * @param field
- * @param key
- * @returns {function(*): (*|{where: {[p: string]: undefined}})}
- */
-let fuzzyQueryLeft = (field = 'name', key) => {
-  if (key == null) key = field;
-  return d => d[key] && {
-    where: {
-      [field]: {
-        'like': `%${d[key]}`
-      }
-    }
-  }
-};
-
-/**
- * 模糊匹配
- *
- * @param field
- * @param key
- * @returns {function(*): (*|{where: {[p: string]: undefined}})}
- */
-let fuzzyQuery = (field = 'name', key) => {
-  if (key == null) key = field;
-  return d => d[key] && {
-    where: {
-      [field]: {
-        'like': `%${d[key]}%`
-      }
-    }
-  }
-};
-
-
-/**
- * 分页查询
- *
- * @param {object} d - request body data
  * @param {number} [defaultCount=5] -每页的默认数量
  * @param {number} [defaultPage=0] - 默认从第 0 页开始
  * @returns {Object}
@@ -398,30 +324,15 @@ let pagination = (defaultCount = 5, defaultPage = 0) => {
   }
 };
 
-/**
- * 关联
- *
- * @param args
- * @returns {function(*): {include: *[]}}
- */
-let includes = (...args) => d => ({include: args});
-
 
 /**
- * 排序
- *
- * @param value
- * @returns {function(*): {order: *}}
+ * 模糊查询
+ * @param field
+ * @returns {function(*=): {where}}
  */
-let order = value => d => ({order: value});
-
-/**
- * 深度合并多个对象或函数
- *
- * @param args
- * @returns {function(*=): *}
- */
-let merge = (...args) =>  d =>  _merge.recursive(true, d, ...args.map(f => typeof f === 'function' ? f(d) : f));
+let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[field]}%`]);
+let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[field]}`]);
+let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[field]}%`]);
 
 
 // /**
@@ -444,14 +355,10 @@ let merge = (...args) =>  d =>  _merge.recursive(true, d, ...args.map(f => typeo
 
 var Scopes = {
   where,
-  fuzzyQueryRight,
-  fuzzyQueryLeft,
   fuzzyQuery,
-  it,
+  fuzzyQueryLeft,
+  fuzzyQueryRight,
   pagination,
-  merge,
-  includes,
-  order
 };
 
 /**
@@ -515,6 +422,7 @@ function scope (...scopes) {
     if (!isObj(scope) && typeof scope !== 'function') {
       error('Scope must be a function or object.', `${this.model.name}.scope(→...scopes←)`);
     }
+    this._scopes.push(scope);
   });
   return this
 }
@@ -579,9 +487,9 @@ function process$1 (method, f) {
       let result = await f.call(this, data, ctx, next);
       this._data = null;
       result = this.__callHook('after', result, ctx, next);
-      return ctx.body = this.__callHook('data', result, ctx, next)
+      return ctx.body = this.__callHook('data', null, result, ctx, next)
     } catch (err) {
-      return ctx.body = this.__callHook('data', err, ctx, next)
+      return ctx.body = this.__callHook('data', err, null, ctx, next)
     }
   }
 }
@@ -640,11 +548,10 @@ function __internal (name, scopes, ...options) {
       data = this.__callHook('before', data, ctx, next);
       let opts = getOp(options, data);
       opts = mixinScope(data, opts, this._defaultScopes, scopes);
-      console.log(opts);
       opts = [data, opts].slice(-this.model[name].length);
       let result = await this.model[name](...opts);
       result = this.__callHook('after', result, ctx, next);
-      return ctx.body = this.__callHook('data', result, ctx, next)
+      return ctx.body = this.__callHook('data', null, result, ctx, next)
     } catch (err) {
       return ctx.body = this.__callHook('data', err, ctx, next)
     }
@@ -658,11 +565,11 @@ async function __process (name, scopes, ...options) {
   opts = [data, opts].slice(-this.model[name].length);
   return  await this.model[name](...opts)
 }
-function __callHook (name, data, ctx, next) {
+function __callHook (name, ...args) {
   const hook = this.options[name];
   return hook && typeof hook === 'function'
-    ? hook(data, ctx, next)
-    : data
+    ? hook(...args)
+    : args.length === 3 ? args[0] : args[1]
 }
 
 Handle.defaults = {

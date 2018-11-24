@@ -1,8 +1,26 @@
 {
-  "name": "handle",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "handle.js",
+  "version": "0.0.1",
+  "description": "一个基于 koa 和 sequelize 的中间库, 让你只专注于接口逻辑。",
+  "main": "dist/handle.cjs.js",
+  "module": "dist/handle.es.js",
+  "author": {
+    "name": "夜是美"
+  },
+  "keywords": [
+    "handle",
+    "handle.js",
+    "koa",
+    "sequelize"
+  ],
+  "bugs": {
+    "url": "https://github.com/yeshimei/Handle.js/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeshimei/Handle.js.git"
+  },
+  "license": "MIT",
   "scripts": {
     "build": "npm run cjs && npm run @cjs && npm run es && npm run @es",
     "cjs": "rollup -c config/rollup.config.js --environment TARGET:cjs",
@@ -11,8 +29,6 @@
     "@es": "rollup -c config/rollup.config.js --environment TARGET:@es",
     "docs": "jsdoc -c jsdoc.conf.json -t ./node_modules/ink-docstrap/template -R README.md  -d docs"
   },
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-plugin-transform-runtime": "^6.23.0",
@@ -21,12 +37,13 @@
     "mocha": "^5.2.0",
     "rollup": "^0.63.4",
     "rollup-plugin-terser": "^1.0.1",
-    "supertest": "^3.3.0"
+    "supertest": "^3.3.0",
+    "ink-docstrap": "^1.3.2"
   },
   "dependencies": {
+    "chalk": "^2.4.1",
+    "escape-string-regexp": "^1.0.5",
     "glob": "^7.1.3",
-    "ink-docstrap": "^1.3.2",
-    "merge": "^1.2.0",
-    "sequelize": "^4.41.2"
+    "merge": "^1.2.0"
   }
 }

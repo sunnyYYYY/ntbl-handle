@@ -12,7 +12,7 @@ import {
  * @param options {string|array|object|function}
  * @returns {function(*=): {where}}
  */
-let where = options => d => getOp(options, d)
+let where = (...options) => d => getOp(options, d)
 
 
 /**
@@ -35,48 +35,15 @@ let pagination = (defaultCount = 5, defaultPage = 0) => {
 
 
 /**
- * 右模糊查询
+ * 模糊查询
  * @param field
  * @returns {function(*=): {where}}
  */
-let fuzzyQueryRight = field => where([`${field} $like`, d => `${d.field}`])
+let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[field]}%`])
+let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[field]}`])
+let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[field]}%`])
 
 
-/**
- * 左模糊匹配
- *
- * @param field
- * @param key
- * @returns {function(*): (*|{where: {[p: string]: undefined}})}
- */
-let fuzzyQueryLeft = (field = 'name', key) => {
-  if (key == null) key = field
-  return d => d[key] && {
-    where: {
-      [field]: {
-        'like': `%${d[key]}`
-      }
-    }
-  }
-}
-
-/**
- * 模糊匹配
- *
- * @param field
- * @param key
- * @returns {function(*): (*|{where: {[p: string]: undefined}})}
- */
-let fuzzyQuery = (field = 'name', key) => {
-  if (key == null) key = field
-  return d => d[key] && {
-    where: {
-      [field]: {
-        'like': `%${d[key]}%`
-      }
-    }
-  }
-}
 
 
 
@@ -126,12 +93,8 @@ let merge = (...args) =>  d =>  _merge.recursive(true, d, ...args.map(f => typeo
 
 export default {
   where,
-  fuzzyQueryRight,
-  fuzzyQueryLeft,
   fuzzyQuery,
-  it,
+  fuzzyQueryLeft,
+  fuzzyQueryRight,
   pagination,
-  merge,
-  includes,
-  order
 }

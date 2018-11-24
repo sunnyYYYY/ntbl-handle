@@ -40,7 +40,7 @@
 			<li class="dropdown">
 				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="global.html#del">del</a></li><li><a href="global.html#fuzzyQuery">fuzzyQuery</a></li><li><a href="global.html#fuzzyQueryLeft">fuzzyQueryLeft</a></li><li><a href="global.html#fuzzyQueryRight">fuzzyQueryRight</a></li><li><a href="global.html#includes">includes</a></li><li><a href="global.html#it">it</a></li><li><a href="global.html#merge">merge</a></li><li><a href="global.html#option">option</a></li><li><a href="global.html#order">order</a></li><li><a href="global.html#pagination">pagination</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#where">where</a></li>
+					<li><a href="global.html#defaultScope">defaultScope</a></li><li><a href="global.html#fuzzyQuery">fuzzyQuery</a></li><li><a href="global.html#includes">includes</a></li><li><a href="global.html#merge">merge</a></li><li><a href="global.html#mock">mock</a></li><li><a href="global.html#order">order</a></li><li><a href="global.html#pagination">pagination</a></li><li><a href="global.html#process">process</a></li><li><a href="global.html#rawScope">rawScope</a></li><li><a href="global.html#scope">scope</a></li><li><a href="global.html#transaction">transaction</a></li><li><a href="global.html#where">where</a></li>
 				</ul>
 			</li>
 			
@@ -153,7 +153,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="del"><span class="type-signature"></span>del(args)</h4>
+    <h4 class="name" id="defaultScope"><span class="type-signature"></span>defaultScope(scopes)</h4>
     
     
 </dt>
@@ -161,7 +161,7 @@
 
     
     <div class="description">
-        删除 d 对象的字段
+        组合一个或多个实例作用域（作用于实例的每个方法）
     </div>
     
 
@@ -198,10 +198,19 @@
 
         <tr>
             
-                <td class="name"><code>args</code></td>
+                <td class="name"><code>scopes</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">function</span>
+
+
+
             
             </td>
 
@@ -217,6 +226,170 @@
                 </td>
             
 
+            
+
+            <td class="description last">作用域</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
+	<dd class="tag-see">
+		<ul>
+			<li>scope rawScope</li>
+			</ul>
+	</dd>
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Handle.html">Handle</a></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="fuzzyQuery"><span class="type-signature"></span>fuzzyQuery(field)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        模糊查询
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>field</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+                <td class="default">
+                
+                    name
+                
+                </td>
             
 
             <td class="description last"></td>
@@ -296,483 +469,6 @@
 
     </dd>
 </dl>
-
-
-        
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="fuzzyQuery"><span class="type-signature"></span>fuzzyQuery(field, key)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        模糊匹配
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>field</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    name
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>key</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-
-        
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="fuzzyQueryLeft"><span class="type-signature"></span>fuzzyQueryLeft(field, key)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        左模糊匹配
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>field</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    name
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>key</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-
-        
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="fuzzyQueryRight"><span class="type-signature"></span>fuzzyQueryRight(field, key)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        右模糊匹配
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-        <th>Default</th>
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>field</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                    name
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>key</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
-            
-
 
 
         
@@ -914,184 +610,6 @@
     
             
 
-
-
-        
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="it"><span class="type-signature"></span>it(fields, f1, f2)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        前置测试
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>fields</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>f1</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>f2</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <h5>Returns:</h5>
-    
-            
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">function</span>
-
-
-
-    </dd>
-</dl>
 
 
         
@@ -1257,7 +775,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="option"><span class="type-signature"></span>option(keys)</h4>
+    <h4 class="name" id="mock"><span class="type-signature"></span>mock(rule)</h4>
     
     
 </dt>
@@ -1265,7 +783,7 @@
 
     
     <div class="description">
-        可选字段
+        向数据库中批量插入由 mock 生成的随机数据
     </div>
     
 
@@ -1288,8 +806,6 @@
         <th>Type</th>
 
         
-        <th>Argument</th>
-        
 
         
 
@@ -1302,28 +818,24 @@
 
         <tr>
             
-                <td class="name"><code>keys</code></td>
+                <td class="name"><code>rule</code></td>
             
 
             <td class="type">
             
+                
+<span class="param-type">object</span>
+
+
+
+            
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
 
             
 
-            <td class="description last"></td>
+            <td class="description last">mock 的生成规则</td>
         </tr>
 
     
@@ -1338,6 +850,13 @@
 
 	
 
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
 	
 
 	
@@ -1394,7 +913,7 @@
     </dt>
     <dd>
         
-<span class="param-type">function</span>
+<span class="param-type">*</span>
 
 
 
@@ -1403,6 +922,12 @@
 
 
         
+
+    
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">// 生成 10 条数据（mockjs 为例）h.mock({ &#x27;data|10&#x27;: [   {     title: &#x27;@ctitle&#x27;,     content: &#x27;@cparagraph&#x27;,   } ]})</pre>
+
 
     
 </dd>
@@ -1553,7 +1078,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="pagination"><span class="type-signature"></span>pagination(d [, defaultCount] [, defaultPage])</h4>
+    <h4 class="name" id="pagination"><span class="type-signature"></span>pagination( [defaultCount] [, defaultPage])</h4>
     
     
 </dt>
@@ -1561,7 +1086,7 @@
 
     
     <div class="description">
-        分页查询
+        分页
     </div>
     
 
@@ -1596,42 +1121,6 @@
     </thead>
 
     <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>d</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">object</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last">request body data</td>
-        </tr>
-
     
 
         <tr>
@@ -1797,7 +1286,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="set"><span class="type-signature"></span>set(keys)</h4>
+    <h4 class="name" id="process"><span class="type-signature"></span>process( [method], f(data,ctx,next))</h4>
     
     
 </dt>
@@ -1805,7 +1294,7 @@
 
     
     <div class="description">
-        设置或修改 d 对象 (用法和 where 一致)
+        启用一个过程
     </div>
     
 
@@ -1832,6 +1321,8 @@
         
 
         
+        <th>Default</th>
+        
 
         <th class="last">Description</th>
     </tr>
@@ -1842,10 +1333,56 @@
 
         <tr>
             
-                <td class="name"><code>keys</code></td>
+                <td class="name"><code>method</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'get'
+                
+                </td>
+            
+
+            <td class="description last">请求方法</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>f(data,ctx,next)</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">asyncFunction</span>
+
+
+
             
             </td>
 
@@ -1856,14 +1393,16 @@
                 
 
                 
-                    &lt;repeatable><br>
-                
                 </td>
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
-            <td class="description last"></td>
+            <td class="description last">一个 async/await 函数</td>
         </tr>
 
     
@@ -1878,6 +1417,13 @@
 
 	
 
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
 	
 
 	
@@ -1951,7 +1497,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="where"><span class="type-signature"></span>where(keys)</h4>
+    <h4 class="name" id="rawScope"><span class="type-signature"></span>rawScope(scopes)</h4>
     
     
 </dt>
@@ -1959,7 +1505,7 @@
 
     
     <div class="description">
-        where 子句简写
+        组合一个或多个 sequelize 作用域（一层简单的封装）
     </div>
     
 
@@ -1996,10 +1542,590 @@
 
         <tr>
             
-                <td class="name"><code>keys</code></td>
+                <td class="name"><code>scopes</code></td>
             
 
             <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last">要组合的作用域名</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
+	<dd class="tag-see">
+		<ul>
+			<li>defaultScope scope</li>
+			</ul>
+	</dd>
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Handle.html">Handle</a></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="scope"><span class="type-signature"></span>scope(scopes)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        组合一个或多个 scope（仅在当前方法上生效）
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Argument</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scopes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">function</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+	<dt class="tag-see method-doc-label method-doc-details-label">See:</dt>
+	<dd class="tag-see">
+		<ul>
+			<li>defaultScope rawScope</li>
+			</ul>
+	</dd>
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Handle.html">Handle</a></span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="transaction"><span class="type-signature"></span>transaction( [method], f(data,ctx,next,)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        启用一个事务
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Argument</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>method</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    'get'
+                
+                </td>
+            
+
+            <td class="description last">请求方法</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>f(data,ctx,next,</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">asyncFunction</span>
+
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">t) - 一个 async/await 函数</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+	<dt class="tag-since method-doc-label method-doc-details-label">Since:</dt>
+	<dd class="tag-since">
+		<ul class="dummy">
+			<li>1.0.0</li>
+		</ul>
+	</dd>
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="where"><span class="type-signature"></span>where(options)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        where 子句简写支持
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Argument</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">array</span>
+|
+
+<span class="param-type">object</span>
+|
+
+<span class="param-type">function</span>
+
+
+
             
             </td>
 
@@ -2151,7 +2277,7 @@
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
-		on 2018-10-22T13:06:35+08:00
+		on 2018-11-25T00:25:09+08:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

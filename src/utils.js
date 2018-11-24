@@ -1,7 +1,6 @@
 import merge from 'merge'
 import path from 'path'
 import chalk from 'chalk'
-import Sequelize, { Op } from 'sequelize'
 import escapeStringRegexp from 'escape-string-regexp'
 import Handle from './index'
 import glob from 'glob'
@@ -104,7 +103,7 @@ export let getRequestData = (method, ctx) => {
  * @param target
  * @param defaultScope
  * @param scopes
- * @returns {*}
+ * @returns object
  * @private
  */
 export let mixinScope = (d, target, defaultScope, scopes) => {
@@ -112,7 +111,7 @@ export let mixinScope = (d, target, defaultScope, scopes) => {
   if (!scopesAll.length) return target
   let result = scopesAll.map(scope => {
     if (isObj(scope)) return scope
-    let res = scope()
+    let res = scope(d)
     if (typeof res === 'function') res = scope()(d)
     else res = scope(d)
     return res
@@ -163,7 +162,6 @@ export let proxyNames = {
 
 function parseSign (a, b, source, target) {
   if (typeof b === 'function') b = b(target)
-
   let key = a.match(PATTERN_IDENTIFIER)
   let optionKey = key
   let value = b
@@ -174,6 +172,7 @@ function parseSign (a, b, source, target) {
     optionKey = b.match(PATTERN_IDENTIFIER)[0]
     value = target[optionKey]
   }
+  
 
   // 可选项
   if (/^!/.test(a) && target[optionKey] == null) return

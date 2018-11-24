@@ -76,6 +76,7 @@ function scope (...scopes) {
     if (!isObj(scope) && typeof scope !== 'function') {
       error('Scope must be a function or object.', `${this.model.name}.scope(→...scopes←)`)
     }
+    this._scopes.push(scope)
   })
   return this
 }
@@ -140,9 +141,9 @@ function process (method, f) {
       let result = await f.call(this, data, ctx, next)
       this._data = null
       result = this.__callHook('after', result, ctx, next)
-      return ctx.body = this.__callHook('data', result, ctx, next)
+      return ctx.body = this.__callHook('data', null, result, ctx, next)
     } catch (err) {
-      return ctx.body = this.__callHook('data', err, ctx, next)
+      return ctx.body = this.__callHook('data', err, null, ctx, next)
     }
   }
 }
@@ -201,11 +202,10 @@ function __internal (name, scopes, ...options) {
       data = this.__callHook('before', data, ctx, next)
       let opts = getOp(options, data)
       opts = mixinScope(data, opts, this._defaultScopes, scopes)
-      console.log(opts)
       opts = [data, opts].slice(-this.model[name].length)
       let result = await this.model[name](...opts)
       result = this.__callHook('after', result, ctx, next)
-      return ctx.body = this.__callHook('data', result, ctx, next)
+      return ctx.body = this.__callHook('data', null, result, ctx, next)
     } catch (err) {
       return ctx.body = this.__callHook('data', err, ctx, next)
     }
@@ -219,11 +219,11 @@ async function __process (name, scopes, ...options) {
   opts = [data, opts].slice(-this.model[name].length)
   return  await this.model[name](...opts)
 }
-function __callHook (name, data, ctx, next) {
+function __callHook (name, ...args) {
   const hook = this.options[name]
   return hook && typeof hook === 'function'
-    ? hook(data, ctx, next)
-    : data
+    ? hook(...args)
+    : args.length === 3 ? args[0] : args[1]
 }
 
 Handle.defaults = {
