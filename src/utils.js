@@ -91,7 +91,6 @@ export let getOp = (o, data) => {
  */
 export let getRequestData = (method, ctx) => {
   method = method.toLowerCase()
-  console.log(method)
   return method === 'get' ? ctx.query
     : method === 'post' ? ctx.request.body
       : {}
@@ -112,8 +111,10 @@ export let mixinScope = (d, target, defaultScope, scopes) => {
   let scopesAll = defaultScope.concat(scopes)
   if (!scopesAll.length) return target
   let result = scopesAll.map(scope => {
-    let res = typeof scope === 'function' ? scope(d) : scope
+    if (isObj(scope)) return scope
+    let res = scope()
     if (typeof res === 'function') res = scope()(d)
+    else res = scope(d)
     return res
   })
   return merge.recursive(true, target, ...result)
