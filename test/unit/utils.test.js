@@ -19,7 +19,8 @@ describe('utils test', () => {
       d1_alias: 'foo',
       e1: 13,
       f1: 23,
-      bar1: 1
+      bar1: 1,
+      title: 23
     }
 
     const options = [
@@ -38,20 +39,24 @@ describe('utils test', () => {
       ['d1>', '@d1_alias'],
       ['!e1>', 1],
       ['!f1>', '@f1_alias'],
+      ['!title $like', d => `%${d.title}%`]
     ]
 
 
     const result = {
       where: {
-        bar: {and: undefined},
-        a: { and: 2 },
-        c: { and: 1 },
-        d: { and: 'foo' },
-        e: { and: 1 },
+        bar: undefined,
+        a: 2,
+        c: 1,
+        d: 'foo',
+        e: 1,
         a1: { gt: 2 },
         c1: { gt: 1, lt: 3 },
         d1: { gt: 'foo' },
-        e1: { gt: 1 }
+        e1: { gt: 1 },
+        title: {
+          like: '%23%'
+        }
       }
     }
 

@@ -12,44 +12,34 @@ import {
  * @param options {string|array|object|function}
  * @returns {function(*=): {where}}
  */
-export let where = options => d => getOp(options, d)
+let where = options => d => getOp(options, d)
 
-
-let z = value => Array.isArray(value) ? value : [value]
-let m = (f, d) => z(f).filter(f => f => typeof f === 'function').map(f => f(d))
-let p = d => filed => {
-  if (typeof filed === 'string') return d[filed]
-  if (Array.isArray(filed)) return d[filed[0]] === filed[1]
-  if (typeof filed === 'function') filed(d)
-}
 
 /**
- * 前置条件
+ * 分页
  *
- * @param fields
- * @param f1
- * @param f2
- * @returns {function(*=): *}
+ * @param {number} [defaultCount=5] -每页的默认数量
+ * @param {number} [defaultPage=0] - 默认从第 0 页开始
+ * @returns {Object}
  */
-let it = (fields, f1 = noop, f2 = noop) => d => _merge.recursive(true, ...(z(fields).every(p(d)) ? m(f1, d) : m(f2, d)))
-
-/**
- * 右模糊匹配
- *
- * @param field
- * @param key
- * @returns {function(*): (*|{where: {[p: string]: undefined}})}
- */
-let fuzzyQueryRight = (field = 'name', key) => {
-  if (key == null) key = field
-  return d => d[key] && {
-    where: {
-      [field]: {
-        'like': `${d[key]}%`
-      }
+let pagination = (defaultCount = 5, defaultPage = 0) => {
+  return d => {
+    const count = ~~d.count || defaultCount
+    const page = ~~d.page || defaultPage
+    return {
+      limit: count,
+      offset: page * count
     }
   }
 }
+
+
+/**
+ * 右模糊查询
+ * @param field
+ * @returns {function(*=): {where}}
+ */
+let fuzzyQueryRight = field => where([`${field} $like`, d => `${d.field}`])
 
 
 /**
@@ -89,24 +79,6 @@ let fuzzyQuery = (field = 'name', key) => {
 }
 
 
-/**
- * 分页查询
- *
- * @param {object} d - request body data
- * @param {number} [defaultCount=5] -每页的默认数量
- * @param {number} [defaultPage=0] - 默认从第 0 页开始
- * @returns {Object}
- */
-let pagination = (defaultCount = 5, defaultPage = 0) => {
-  return d => {
-    const count = ~~d.count || defaultCount
-    const page = ~~d.page || defaultPage
-    return {
-      limit: count,
-      offset: page * count
-    }
-  }
-}
 
 /**
  * 关联

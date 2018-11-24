@@ -161,6 +161,8 @@ export let proxyNames = {
 
 
 function parseSign (a, b, source, target) {
+  if (typeof b === 'function') b = b(target)
+
   let key = a.match(PATTERN_IDENTIFIER)
   let optionKey = key
   let value = b
@@ -219,7 +221,7 @@ function parseSign (a, b, source, target) {
   }
   else {
     if (!source[key]) source[key] = {}
-    source[key][Op[arg]] = value
+    source[key][arg] = value
   }
 }
 
