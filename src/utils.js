@@ -1,29 +1,82 @@
 import merge from 'merge'
+import path from 'path'
+import chalk from 'chalk'
+import Sequelize, { Op } from 'sequelize'
+import escapeStringRegexp from 'escape-string-regexp'
+import Handle from './index'
+import glob from 'glob'
+
+
+const PATTERN_IDENTIFIER = /[A-Za-z_][A-Za-z0-9_]*/
+
+export let requestMethods = ['get', 'head', 'put', 'delete', 'post', 'options']
+
+export let isObj = value => Object.prototype.toString.call(value) === '[object Object]'
+export let noop = () => {}
+export let error = (msg, msg2 = '') => {
+  console.error(chalk.bgRed(' ERROR ') + ' ' + chalk.red(msg) + (msg2 ? ' ☞ ' +  chalk.gray(msg2) : ''))
+  process.exit(1)
+}
+
+export let warn = msg => {
+  console.error(chalk.bgYellow(' WARN ') + ' ' + chalk.yellow(msg))
+}
+
+export let load = (sequelize, dir, options) => {
+  if (typeof dir !== 'string') {
+    error('dir must be a string.', 'load(sequelize, →dir←, options)')
+  }
+
+  try {
+    return new Handle(sequelize.import(dir), options)
+  } catch (e) {
+
+    if (load.length === 1) {
+      error('You may not have passed in the Sequelie instance, it imports the model using import.')
+    }
+
+    error('Please check the path, it may be wrong.', dir)
+  }
+}
+
+export let loadAll = function (sequelize, dir, options = {}) {
+
+  if (typeof dir !== 'string') {
+    error('dir must be a string.', 'load(sequelize, →dir←, options)')
+  }
+
+  const { rule = '/**/!(index|_)*.js' } = options
+  return glob
+    .sync(path.join(dir, rule))
+    .reduce((ret, file) => {
+      ret[path.parse(file).name] = this.load(sequelize, file, options)
+      return ret
+    }, {})
+}
+
 
 /**
- * 生成模型方法的选项对象，为了支持 where 子句的快捷写法
+ * 生成模型方法的选项对象，支持 where 子句的快捷写法
  *
-
- * @param {string|array|object|function} o - 生成数据
+ * @param {string|array|function} o - 生成数据
  * @param {object} data - request body data
- * @param ctx
- * @param next
- * @returns {*}
+ * @returns object
  * @private
  */
-export let getOp = (o, data, ctx, next) => {
+export let getOp = (o, data) => {
   if (typeof o === 'string') o = [o]
+  else if (typeof o === 'function') return o(data)
 
   if (Array.isArray(o)) {
     return {
       where: o.reduce((ret, res) => {
-        if (typeof res === 'string') ret[res] = data[res]
-        else if (Array.isArray(res)) ret[res[0]] = /^@/.test(res[1]) ? data[res[1].slice(1)] : res[1]
+        if (typeof res === 'string') parseSign(res, '@' + res, ret, data)
+        else if (Array.isArray(res)) parseSign(res[0], res[1], ret, data)
         return ret
       }, {})
     }
   }
-  else if (typeof o === 'function') return o(data, ctx, next)
+
   return o || {}
 }
 
@@ -37,6 +90,8 @@ export let getOp = (o, data, ctx, next) => {
  * @private
  */
 export let getRequestData = (method, ctx) => {
+  method = method.toLowerCase()
+  console.log(method)
   return method === 'get' ? ctx.query
     : method === 'post' ? ctx.request.body
       : {}
@@ -104,5 +159,68 @@ export let proxyNames = {
   ]
 }
 
+
+function parseSign (a, b, source, target) {
+  let key = a.match(PATTERN_IDENTIFIER)
+  let optionKey = key
+  let value = b
+  key = key && key[0]
+
+  // 别名
+  if (typeof b === 'string' && /^@/.test(b)) {
+    optionKey = b.match(PATTERN_IDENTIFIER)[0]
+    value = target[optionKey]
+  }
+
+  // 可选项
+  if (/^!/.test(a) && target[optionKey] == null) return
+
+  // Op
+
+  let opTag = {
+    '>': 'gt',
+    '>=': 'gte',
+    '<': 'lt',
+    '<=': 'lte',
+    '!=': 'ne',
+    '=': 'and',
+    '$and': 'and',
+    '$or': 'or',
+    '$gt': 'gt',
+    '$gte': 'gte',
+    '$lt': 'lt',
+    '$lte': 'lte',
+    '$ne': 'ne',
+    '$eq': 'eq',
+    '$not': 'not',
+    '$between': 'between',
+    '$notBetween': 'notBetween',
+    '$in': 'in',
+    '$notIn': 'notIn',
+    '$like': 'like',
+    '$notLike': 'notLike',
+    '$iLike': 'iLike',
+    '$regexp': 'regexp',
+    '$iRegexp': 'iRegexp',
+    '$notIRegexp': 'notIRegexp',
+    '$overlap': 'overlap',
+    '$contains': 'contains',
+    '$contained': 'contained',
+    '$any': 'any',
+    '$col': 'col',
+  }
+  let argMatch = a.match(new RegExp('(' + Object.keys(opTag).map(arg => escapeStringRegexp(arg)).join('|') +
+    ')'))
+  let arg = opTag[argMatch ? argMatch[0] : '=']
+
+  if (arg === 'and') {
+    if (!source[key]) source[key] = []
+    source[key] = value
+  }
+  else {
+    if (!source[key]) source[key] = {}
+    source[key][Op[arg]] = value
+  }
+}
 
 

@@ -8,6 +8,9 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true,
       autoIncrement: true
     },
+    uid: {
+      type: DataTypes.INTEGER(11),
+    },
     title: {
       type: DataTypes.STRING(255),
       allowNull: false

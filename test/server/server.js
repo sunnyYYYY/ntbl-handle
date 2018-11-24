@@ -32,6 +32,12 @@ app
     }
   }))
   .use(router.routes(), router.allowedMethods())
-  .listen(3000)
+
+
+// 解决 supertest Listen EADDRINUSE (端口被占用) 的问题
+// https://blog.csdn.net/liangxw1/article/details/78351576
+if (!module.parent) {
+  app.listen(3000)
+}
 
 export default app
