@@ -128,6 +128,22 @@ export let mixinScope = (d, target, defaultScope, scopes) => {
  */
 export let initialCap = str => str[0].toUpperCase() + str.substring(1)
 
+export let tailspin = (o, path, defaultValue) => {
+  const args = path.match(/[^\.\[\]]+/g)
+  if (args) {
+    try {
+      return args
+        .map(arg => Object.is(Number(arg), NaN) ? arg : Number(arg))
+        .reduce((ret, res) => ret[res], o) || defaultValue
+    } catch (e) {
+      return defaultValue
+    }
+  }
+
+  return defaultValue
+}
+
+
 /**
  * 需要被代理的方法名对象
  *

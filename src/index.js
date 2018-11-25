@@ -3,13 +3,14 @@ import {
   getOp,
   getRequestData,
   mixinScope,
-  proxyNames,
   initialCap,
   load,
   loadAll,
-  error,
   isObj,
+  tailspin,
+  error,
   warn,
+  proxyNames,
   requestMethods
 } from './utils'
 import Include from "./inclue"
@@ -219,8 +220,8 @@ function __internal (name, ...args) {
   return async (ctx, next) => {
     // 获取请求方法
     const requestMethod = method
-      || this.options.proxy && this.options.proxy[name] && this.options.proxy[name].method
-      || Handle.defaults.proxy[name].method
+      || tailspin(this, `options.proxy${name}.method`)
+      || tailspin(Handle, `defaults.proxy${name}.method`)
       || 'get'
 
     // 获取数据
