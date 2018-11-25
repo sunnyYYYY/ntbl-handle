@@ -1,3 +1,4 @@
+import merge from 'merge'
 import {
   getOp,
   getRequestData,
@@ -33,37 +34,65 @@ function Handle(model, options = {}) {
   if (!(this instanceof Handle)) return new Handle(model, options = {})
   this.model = model
   this.options = options
-  this._scopes = []
-  this._defaultScopes = []
+  this.defaultScopes = []
   this._data = null
-  this._method = null
+
+  this.__reset()
 }
 
 Handle.prototype = {
   constructor: Handle,
+  method,
+  raw,
   scope,
   defaultScope,
   rawScope,
   process,
   transaction,
   mock,
-  method,
-  __clearScope,
   __internal,
   __process,
+  __reset,
   __callHook
 }
 
 
-function method(s) {
-  s = s.toLowerCase()
-  if (!requestMethods.includes(s)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', s)
-  this._method = s
+/**
+ * 设置调用方法的请求方法
+ *
+ * @param {string} [name='get'] - 请求方法名（支持 6 种标准 http 请求方法，get/head/put/delete/post/options）
+ * @returns this
+ *
+ * @example
+ * article
+ *  .method('post')
+ *  .findAll()
+ */
+function method(name = 'get') {
+  name = name.toLowerCase()
+  if (!requestMethods.includes(name)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', name)
+  this._opts.method = name
   return this
 }
 
 /**
- * 组合一个或多个 scope（仅在当前方法上生效）
+ * 设置原生数据，它会替代 request data 用于查询数据库
+ *
+ * @param {all} data
+ * @returns this
+ * @example
+ * article
+ *  .raw('hot')
+ *  .increment('id')
+ */
+function raw(data) {
+  this._opts.rawData = data
+  return this
+}
+
+
+/**
+ * 设置一个或多个 scope（注意，此方法仅在当前方法上生效）
  *
  * @since 1.0.0
  * @param {object|function} scopes
@@ -71,26 +100,16 @@ function method(s) {
  * @see defaultScope rawScope
  */
 function scope (...scopes) {
-  this.__clearScope()
   scopes.forEach(scope => {
     if (!isObj(scope) && typeof scope !== 'function') {
       error('Scope must be a function or object.', `${this.model.name}.scope(→...scopes←)`)
     }
-    this._scopes.push(scope)
+    this._opts.scopes.push(scope)
   })
   return this
 }
-/**
- * 清除已添加的方法作用域
- *
- * @returns {Array}
- * @private
- */
-function __clearScope () {
-  const scopes = this._scopes
-  this._scopes = []
-  return scopes
-}
+
+
 /**
  * 组合一个或多个实例作用域（作用于实例的每个方法）
  *
@@ -104,7 +123,7 @@ function defaultScope (...scopes) {
     if (!isObj(scope) && typeof scope !== 'function') {
       error('Scope must be a function or object.', `${this.model.name}.scope(→...scopes←)`)
     }
-    this._defaultScopes.push(scope)
+    this.defaultScopes.push(scope)
   })
   return this
 }
@@ -188,22 +207,41 @@ function mock (rule) {
     '\n 然后，在 Handle.options.mock = Mock 使用指定的 mock 库'
   )
 
-  return this.bulkCreate(Mock.mock(rule).data, {})
+  return this.raw(Mock.mock(rule).data).bulkCreate()
 }
-function __internal (name, scopes, ...options) {
+
+
+
+function __internal (name, ...args) {
+  let {defaultScopes} = this
+  let {method, rawData, scopes} = this.__reset()
+
   return async (ctx, next) => {
-    const method = this._method
+    // 获取请求方法
+    const requestMethod = method
       || this.options.proxy && this.options.proxy[name] && this.options.proxy[name].method
       || Handle.defaults.proxy[name].method
       || 'get'
-    let data = getRequestData(method, ctx)
-    this._method = null
+
+    // 获取数据
+    let data = getRequestData(requestMethod, ctx)
+
     try {
       data = this.__callHook('before', data, ctx, next)
-      let opts = getOp(options, data)
-      opts = mixinScope(data, opts, this._defaultScopes, scopes)
+      // where 子句简写解析
+      let opts = getOp(args, data)
+      // 混合作用域
+      opts = mixinScope(data, opts, defaultScopes, scopes)
+      // 原生数据
+      if (rawData) {
+        data = typeof rawData === 'function' ? rawData(data) : rawData
+      }
+
+      // 生成调用方法的参数
       opts = [data, opts].slice(-this.model[name].length)
+      // 调用方法
       let result = await this.model[name](...opts)
+
       result = this.__callHook('after', result, ctx, next)
       return ctx.body = this.__callHook('data', null, result, ctx, next)
     } catch (err) {
@@ -215,9 +253,22 @@ async function __process (name, scopes, ...options) {
   // if (options == null) [d, options] = [undefined, d]
   let data = this._data
   let opts = getOp(options, data)
-  opts = mixinScope(data, opts, this._defaultScopes, scopes)
+  opts = mixinScope(data, opts, this.defaultScopes, scopes)
   opts = [data, opts].slice(-this.model[name].length)
   return  await this.model[name](...opts)
+}
+
+function __reset() {
+  let _opts = this._opts
+  this._opts = {
+    scopes: [],
+  }
+
+  if (_opts) {
+    _opts = merge.recursive(true, {}, _opts)
+  }
+
+  return _opts
 }
 function __callHook (name, ...args) {
   const hook = this.options[name]
@@ -232,17 +283,16 @@ Handle.defaults = {
 
 for (let method in proxyNames) {
   const value = proxyNames[method]
-
   value.forEach(name => {
 
     Handle.defaults.proxy[name] = { method }
 
     Handle.prototype[name] = function (...args) {
-      return this.__internal(name, this.__clearScope(), ...args)
+      return this.__internal(name, ...args)
     }
 
     Handle.prototype['raw' + initialCap(name)] = function (...args) {
-      return this.__process(name, this.__clearScope(), ...args)
+      return this.__process(name, ...args)
     }
   })
 }
