@@ -21,6 +21,7 @@ export let warn = msg => {
   console.error(chalk.bgYellow(' WARN ') + ' ' + chalk.yellow(msg))
 }
 
+
 export let load = (sequelize, dir, options) => {
   if (typeof dir !== 'string') {
     error('dir must be a string.', 'load(sequelize, →dir←, options)')
@@ -128,6 +129,28 @@ export let mixinScope = (d, target, defaultScope, scopes) => {
  */
 export let initialCap = str => str[0].toUpperCase() + str.substring(1)
 
+/**
+ * 对象路径查询，避免臃长的 &&
+ *
+ * @param {array|object} o - 需要查询的对象
+ * @param {string} path -  路径
+ * @param defaultValue - 当未查询到提供的默认值
+ * @returns {*}
+ * @private
+ * @example
+ *
+ * data = {
+ *   a: {
+ *     b: [1, 2, 3, {
+ *       c: 10
+ *     }]
+ *   }
+ * }
+ *
+ * tailspin(data, 'a.b.3.c')  // 10
+ * tailspin(data, 'a.d')      // undefined
+ * tailspin(data, 'a.d', 3)   // 3，提供默认值
+ */
 export let tailspin = (o, path, defaultValue) => {
   const args = path.match(/[^\.\[\]]+/g)
   if (args) {

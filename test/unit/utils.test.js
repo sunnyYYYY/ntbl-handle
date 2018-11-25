@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import {
-  getOp
+  getOp,
+  tailspin
 } from '../../src/utils'
 
 describe('utils test', () => {
@@ -61,5 +62,15 @@ describe('utils test', () => {
     }
 
     expect(getOp(options, data)).deep.equal(result)
+  })
+
+  it('tailspin# 对象路径测试', () => {
+    expect(tailspin({
+      a: {
+        b: [1, 2, 4, {
+          c: 10
+        }]
+      }
+    }, 'a.b[3].c')).equal(10)
   })
 })

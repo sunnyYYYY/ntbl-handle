@@ -60,7 +60,8 @@ Handle.prototype = {
 
 /**
  * 设置调用方法的请求方法
- *
+ * @memberOf Handle
+ * @instance
  * @param {string} [name='get'] - 请求方法名（支持 6 种标准 http 请求方法，get/head/put/delete/post/options）
  * @returns this
  *
@@ -78,7 +79,8 @@ function method(name = 'get') {
 
 /**
  * 设置原生数据，它会替代 request data 用于查询数据库
- *
+ * @memberOf Handle
+ * @instance
  * @param {all} data
  * @returns this
  * @example
@@ -94,8 +96,8 @@ function raw(data) {
 
 /**
  * 设置一个或多个 scope（注意，此方法仅在当前方法上生效）
- *
- * @since 1.0.0
+ * @memberOf Handle
+ * @instance
  * @param {object|function} scopes
  * @returns {Handle}
  * @see defaultScope rawScope
@@ -113,8 +115,8 @@ function scope (...scopes) {
 
 /**
  * 组合一个或多个实例作用域（作用于实例的每个方法）
- *
- * @since 1.0.0
+ * @memberOf Handle
+ * @instance
  * @param {object|function} scopes - 作用域
  * @returns {Handle}
  * @see scope rawScope
@@ -130,8 +132,7 @@ function defaultScope (...scopes) {
 }
 /**
  * 组合一个或多个 sequelize 作用域（一层简单的封装）
- *
- * @since 1.0.0
+ * @memberOf Handle
  * @param {object|function} scopes - 要组合的作用域名
  * @returns {Handle}
  * @see defaultScope scope
@@ -141,8 +142,8 @@ function rawScope(...scopes) {
 }
 /**
  * 启用一个过程
- *
- * @since 1.0.0
+ * @memberOf Handle
+ * @instance
  * @param {string} [method='get'] - 请求方法
  * @param {asyncFunction} f(data,ctx,next) - 一个 async/await 函数
  * @returns {Function}
@@ -169,8 +170,8 @@ function process (method, f) {
 }
 /**
  * 启用一个事务
- *
- * @since 1.0.0
+ * @memberOf Handle
+ * @instance
  * @param {string} [method='get'] - 请求方法
  * @param {asyncFunction} f(data,ctx,next, t) - 一个 async/await 函数
  * @returns {Function}
@@ -182,9 +183,8 @@ function transaction (method, f) {
 }
 /**
  * 向数据库中批量插入由 mock 生成的随机数据
- *
- * @since 1.0.0
- * @category String
+ * @memberOf Handle
+ * @instance
  * @param {object} rule - mock 的生成规则
  * @example
  *
@@ -298,20 +298,38 @@ for (let method in proxyNames) {
   })
 }
 
+
+/**
+ *
+ * @memberOf Handle
+ * @static
+ * @param {sequelize} sequelize - Sequelieze 实例
+ * @param {string} dir - 文件路径
+ * @param {object} [options={}] - 实例化时的选项对象
+ * @returns {handle}
+ */
 Handle.load = load
+/**
+ * @memberOf Handle
+ * @static
+ * @param {sequelize} sequelize - Sequelieze 实例
+ * @param {string} dir - 文件路径
+ * @param {object} [options={}] - 实例化时的选项对象
+ * @param {object} [options.rule=''\**\!(index|_)*.js''] - 匹配规则，支持 glob 语法
+ * @returns {{filename: handle}}
+ */
 Handle.loadAll = loadAll
 
 
 
 /**
- * 关联生成器
- *
- * @since 1.0.0
+ * 关联查询的辅助对象
  * @type {Include}
  * @see Include
  */
-Handle.Include = new Include()
+Handle.Include = Include
 /**
+ *
  * scopes 工具集
  * @type {{Scopes}}
  * @see Scopes

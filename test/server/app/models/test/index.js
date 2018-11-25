@@ -2,6 +2,7 @@ import Sequelize from 'sequelize'
 import Handle from  '../../../../../dist/handle.es'
 import config from '../../config/database.config'
 
+export let Scopes = Handle.Scopes
 export const op = Sequelize.Op
 export const sequelize = new Sequelize(config)
 
@@ -14,4 +15,4 @@ article.model.hasMany(Comment, {foreignKey: 'aid'})
 Comment.belongsTo(article.model, {foreignKey: 'aid'})
 
 
-// sequelize.sync({force: true})
+// sequelize.sync({alter: true})

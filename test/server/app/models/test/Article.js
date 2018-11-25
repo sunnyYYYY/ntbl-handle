@@ -28,6 +28,10 @@ module.exports = function(sequelize, DataTypes) {
     content: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    hot: {
+      type: DataTypes.INTEGER(11),
+      defaultValue: 0
     }
   });
 };

@@ -1,5 +1,5 @@
 /*!
- * handle v0.0.1
+ * handle v0.0.2
  * (c) 2017-2018 Sunny
  * Released under the MIT License.
  */
@@ -18,6 +18,7 @@ let error = (msg, msg2 = '') => {
   console.error(chalk.bgRed(' ERROR ') + ' ' + chalk.red(msg) + (msg2 ? ' ☞ ' +  chalk.gray(msg2) : ''));
   process.exit(1);
 };
+
 
 let load = (sequelize, dir, options) => {
   if (typeof dir !== 'string') {
@@ -127,6 +128,44 @@ let mixinScope = (d, target, defaultScope, scopes) => {
 let initialCap = str => str[0].toUpperCase() + str.substring(1);
 
 /**
+ * 对象路径查询，避免臃长的 &&
+ *
+ * @param {array|object} o - 需要查询的对象
+ * @param {string} path -  路径
+ * @param defaultValue - 当未查询到提供的默认值
+ * @returns {*}
+ * @private
+ * @example
+ *
+ * data = {
+ *   a: {
+ *     b: [1, 2, 3, {
+ *       c: 10
+ *     }]
+ *   }
+ * }
+ *
+ * tailspin(data, 'a.b.3.c')  // 10
+ * tailspin(data, 'a.d')      // undefined
+ * tailspin(data, 'a.d', 3)   // 3，提供默认值
+ */
+let tailspin = (o, path$$1, defaultValue) => {
+  const args = path$$1.match(/[^\.\[\]]+/g);
+  if (args) {
+    try {
+      return args
+        .map(arg => Object.is(Number(arg), NaN) ? arg : Number(arg))
+        .reduce((ret, res) => ret[res], o) || defaultValue
+    } catch (e) {
+      return defaultValue
+    }
+  }
+
+  return defaultValue
+};
+
+
+/**
  * 需要被代理的方法名对象
  *
  * @type {{get: string[], post: string[]}}
@@ -223,83 +262,81 @@ function parseSign (a, b, source, target) {
   }
 }
 
+const maps = {};
+
 /**
- * 关联查询的辅助类，
  * 通过 add 添加模型的基本 include，然后由 create 指定层级关系，并生成复杂的关联查询。
- *
- * @constructor
- *
+ * @module Handle.Include
  */
-class Include {
-  constructor () {
-    this.__maps = {};
-  }
 
-  /**
-   * 添加一个 include
-   *
-   * @param {string} name - include 的名称
-   * @param {object|function} f - 一个返回 include 数据的方法，如果为对象，则简单的封装成一个函数
-   * @returns {Include}
-   */
-  add (name, f) {
-    const maps = this.__maps;
-    if (typeof f !== 'function') f = () => f;
-    maps[name] = f.bind(maps);
-    return this
-  }
-
-  /**
-   * 移除一个 include
-   * @param {string} name - include 的名称
-   * @returns {boolean}
-   */
-  remove (name) {
-    const maps = this.__maps;
-    return delete maps[name]
-  }
-
-  /**
-   * 获取一个 include
-   * @param {string} name - include 的名称
-   * @returns {*}
-   */
-  get (name) {
-    const maps = this.__maps;
-    return maps[name]
-  }
-
-  /**
-   * 组合 include 生成更复杂的 include
-   * @param {...args} scopes - 指定的层级关系
-   * @returns {Array}
-   */
-
-
-  create (...args) {
-    const maps = this.__maps;
-    return (function _create(scopes, ret = []) {
-      for (let key in scopes) {
-        let value = scopes[key];
-        if (typeof value === 'string') ret.push(maps[value]());
-        else if (Array.isArray(value)) _create(value, ret);
-        else {
-          let [_k, _v] = Object.entries(value)[0];
-          let d = maps[_k]();
-          d.include = [];
-          ret.push(d);
-          _create(_v, d.include);
-        }
-      }
-      return {include: ret}
-    })(args)
-
-  }
+/**
+ * 添加一个 include
+ * @param {string} name - include 的名称
+ * @param {object|function} f - 一个返回 include 数据的方法，如果为对象，则简单的封装成一个函数
+ * @returns {Include}
+ */
+function add (name, f) {
+  if (typeof f !== 'function') f = () => f;
+  maps[name] = f.bind(maps);
+  return this
 }
 
 /**
+ * 移除一个 include
+ * @param {string} name - include 的名称
+ * @returns {boolean}
+ */
+function remove (name) {
+  return delete maps[name]
+}
+
+/**
+ * 获取一个 include
+ * @param {string} name - include 的名称
+ * @returns {*}
+ */
+function get (name) {
+  return maps[name]
+}
+
+/**
+ * 组合 include 生成更复杂的 include
+ * @param {...args} scopes - 指定的层级关系
+ * @returns {Array}
+ */
+function create (...args) {
+  return (function _create(scopes, ret = []) {
+    for (let key in scopes) {
+      let value = scopes[key];
+      if (typeof value === 'string') ret.push(maps[value]());
+      else if (Array.isArray(value)) _create(value, ret);
+      else {
+        let [_k, _v] = Object.entries(value)[0];
+        let d = maps[_k]();
+        d.include = [];
+        ret.push(d);
+        _create(_v, d.include);
+      }
+    }
+    return {include: ret}
+  })(args)
+}
+
+
+var Include = {
+  add,
+  remove,
+  get,
+  create
+};
+
+/**
+ * Scopes 工具集
+ * @module Handle.Scopes
+ */
+
+/**
  * where 子句简写支持
- *
  * @param options {string|array|object|function}
  * @returns {function(*=): {where}}
  */
@@ -308,7 +345,6 @@ let where = (...options) => d => getOp(options, d);
 
 /**
  * 分页
- *
  * @param {number} [defaultCount=5] -每页的默认数量
  * @param {number} [defaultPage=0] - 默认从第 0 页开始
  * @returns {Object}
@@ -331,27 +367,21 @@ let pagination = (defaultCount = 5, defaultPage = 0) => {
  * @returns {function(*=): {where}}
  */
 let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[field]}%`]);
+
+
+/**
+ * 左模糊查询
+ * @param field
+ * @returns {function(*=): {where}}
+ */
 let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[field]}`]);
+
+/**
+ * 右模糊查询
+ * @param field
+ * @returns {function(*=): {where}}
+ */
 let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[field]}%`]);
-
-
-// /**
-//  * 设置或修改 d 对象 (用法和 where 一致)
-//  *
-//  * @param keys
-//  * @returns {function(*=): any}
-//  */
-// let set = (...keys) => d => Object.assign(d, superNormalize(d, keys, value => value != null))
-//
-// /**
-//  * 删除 d 对象的字段
-//  *
-//  * @param args
-//  * @returns {function(*): void}
-//  */
-// let del = (...args) => d => args.forEach(filed => filed in d && delete d[filed])
-
-
 
 var Scopes = {
   where,
@@ -379,68 +409,88 @@ function Handle(model, options = {}) {
   if (!(this instanceof Handle)) return new Handle(model, options = {})
   this.model = model;
   this.options = options;
-  this._scopes = [];
-  this._defaultScopes = [];
+  this.defaultScopes = [];
   this._data = null;
-  this._method = null;
+
+  this.__reset();
 }
 
 Handle.prototype = {
   constructor: Handle,
+  method,
+  raw,
   scope,
   defaultScope,
   rawScope,
   process: process$1,
   transaction,
   mock,
-  method,
-  __clearScope,
   __internal,
   __process,
+  __reset,
   __callHook
 };
 
 
-function method(s) {
-  s = s.toLowerCase();
-  if (!requestMethods.includes(s)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', s);
-  this._method = s;
+/**
+ * 设置调用方法的请求方法
+ * @memberOf Handle
+ * @instance
+ * @param {string} [name='get'] - 请求方法名（支持 6 种标准 http 请求方法，get/head/put/delete/post/options）
+ * @returns this
+ *
+ * @example
+ * article
+ *  .method('post')
+ *  .findAll()
+ */
+function method(name = 'get') {
+  name = name.toLowerCase();
+  if (!requestMethods.includes(name)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', name);
+  this._opts.method = name;
   return this
 }
 
 /**
- * 组合一个或多个 scope（仅在当前方法上生效）
- *
- * @since 1.0.0
+ * 设置原生数据，它会替代 request data 用于查询数据库
+ * @memberOf Handle
+ * @instance
+ * @param {all} data
+ * @returns this
+ * @example
+ * article
+ *  .raw('hot')
+ *  .increment('id')
+ */
+function raw(data) {
+  this._opts.rawData = data;
+  return this
+}
+
+
+/**
+ * 设置一个或多个 scope（注意，此方法仅在当前方法上生效）
+ * @memberOf Handle
+ * @instance
  * @param {object|function} scopes
  * @returns {Handle}
  * @see defaultScope rawScope
  */
 function scope (...scopes) {
-  this.__clearScope();
   scopes.forEach(scope => {
     if (!isObj(scope) && typeof scope !== 'function') {
       error('Scope must be a function or object.', `${this.model.name}.scope(→...scopes←)`);
     }
-    this._scopes.push(scope);
+    this._opts.scopes.push(scope);
   });
   return this
 }
-/**
- * 清除已添加的方法作用域
- *
- * @returns {Array}
- * @private
- */
-function __clearScope () {
-  const scopes = this._scopes;
-  this._scopes = [];
-  return scopes
-}
+
+
 /**
  * 组合一个或多个实例作用域（作用于实例的每个方法）
- *
- * @since 1.0.0
+ * @memberOf Handle
+ * @instance
  * @param {object|function} scopes - 作用域
  * @returns {Handle}
  * @see scope rawScope
@@ -450,14 +500,13 @@ function defaultScope (...scopes) {
     if (!isObj(scope) && typeof scope !== 'function') {
       error('Scope must be a function or object.', `${this.model.name}.scope(→...scopes←)`);
     }
-    this._defaultScopes.push(scope);
+    this.defaultScopes.push(scope);
   });
   return this
 }
 /**
  * 组合一个或多个 sequelize 作用域（一层简单的封装）
- *
- * @since 1.0.0
+ * @memberOf Handle
  * @param {object|function} scopes - 要组合的作用域名
  * @returns {Handle}
  * @see defaultScope scope
@@ -467,8 +516,8 @@ function rawScope(...scopes) {
 }
 /**
  * 启用一个过程
- *
- * @since 1.0.0
+ * @memberOf Handle
+ * @instance
  * @param {string} [method='get'] - 请求方法
  * @param {asyncFunction} f(data,ctx,next) - 一个 async/await 函数
  * @returns {Function}
@@ -495,8 +544,8 @@ function process$1 (method, f) {
 }
 /**
  * 启用一个事务
- *
- * @since 1.0.0
+ * @memberOf Handle
+ * @instance
  * @param {string} [method='get'] - 请求方法
  * @param {asyncFunction} f(data,ctx,next, t) - 一个 async/await 函数
  * @returns {Function}
@@ -508,9 +557,8 @@ function transaction (method, f) {
 }
 /**
  * 向数据库中批量插入由 mock 生成的随机数据
- *
- * @since 1.0.0
- * @category String
+ * @memberOf Handle
+ * @instance
  * @param {object} rule - mock 的生成规则
  * @example
  *
@@ -534,22 +582,41 @@ function mock (rule) {
     '\n 然后，在 Handle.options.mock = Mock 使用指定的 mock 库'
   );
 
-  return this.bulkCreate(Mock.mock(rule).data, {})
+  return this.raw(Mock.mock(rule).data).bulkCreate()
 }
-function __internal (name, scopes, ...options) {
+
+
+
+function __internal (name, ...args) {
+  let {defaultScopes} = this;
+  let {method, rawData, scopes} = this.__reset();
+
   return async (ctx, next) => {
-    const method = this._method
-      || this.options.proxy && this.options.proxy[name] && this.options.proxy[name].method
-      || Handle.defaults.proxy[name].method
+    // 获取请求方法
+    const requestMethod = method
+      || tailspin(this, `options.proxy${name}.method`)
+      || tailspin(Handle, `defaults.proxy${name}.method`)
       || 'get';
-    let data = getRequestData(method, ctx);
-    this._method = null;
+
+    // 获取数据
+    let data = getRequestData(requestMethod, ctx);
+
     try {
       data = this.__callHook('before', data, ctx, next);
-      let opts = getOp(options, data);
-      opts = mixinScope(data, opts, this._defaultScopes, scopes);
+      // where 子句简写解析
+      let opts = getOp(args, data);
+      // 混合作用域
+      opts = mixinScope(data, opts, defaultScopes, scopes);
+      // 原生数据
+      if (rawData) {
+        data = typeof rawData === 'function' ? rawData(data) : rawData;
+      }
+
+      // 生成调用方法的参数
       opts = [data, opts].slice(-this.model[name].length);
+      // 调用方法
       let result = await this.model[name](...opts);
+
       result = this.__callHook('after', result, ctx, next);
       return ctx.body = this.__callHook('data', null, result, ctx, next)
     } catch (err) {
@@ -561,9 +628,22 @@ async function __process (name, scopes, ...options) {
   // if (options == null) [d, options] = [undefined, d]
   let data = this._data;
   let opts = getOp(options, data);
-  opts = mixinScope(data, opts, this._defaultScopes, scopes);
+  opts = mixinScope(data, opts, this.defaultScopes, scopes);
   opts = [data, opts].slice(-this.model[name].length);
   return  await this.model[name](...opts)
+}
+
+function __reset() {
+  let _opts = this._opts;
+  this._opts = {
+    scopes: [],
+  };
+
+  if (_opts) {
+    _opts = merge.recursive(true, {}, _opts);
+  }
+
+  return _opts
 }
 function __callHook (name, ...args) {
   const hook = this.options[name];
@@ -578,35 +658,52 @@ Handle.defaults = {
 
 for (let method in proxyNames) {
   const value = proxyNames[method];
-
   value.forEach(name => {
 
     Handle.defaults.proxy[name] = { method };
 
     Handle.prototype[name] = function (...args) {
-      return this.__internal(name, this.__clearScope(), ...args)
+      return this.__internal(name, ...args)
     };
 
     Handle.prototype['raw' + initialCap(name)] = function (...args) {
-      return this.__process(name, this.__clearScope(), ...args)
+      return this.__process(name, ...args)
     };
   });
 }
 
+
+/**
+ *
+ * @memberOf Handle
+ * @static
+ * @param {sequelize} sequelize - Sequelieze 实例
+ * @param {string} dir - 文件路径
+ * @param {object} [options={}] - 实例化时的选项对象
+ * @returns {handle}
+ */
 Handle.load = load;
+/**
+ * @memberOf Handle
+ * @static
+ * @param {sequelize} sequelize - Sequelieze 实例
+ * @param {string} dir - 文件路径
+ * @param {object} [options={}] - 实例化时的选项对象
+ * @param {object} [options.rule=''\**\!(index|_)*.js''] - 匹配规则，支持 glob 语法
+ * @returns {{filename: handle}}
+ */
 Handle.loadAll = loadAll;
 
 
 
 /**
- * 关联生成器
- *
- * @since 1.0.0
+ * 关联查询的辅助对象
  * @type {Include}
  * @see Include
  */
-Handle.Include = new Include();
+Handle.Include = Include;
 /**
+ *
  * scopes 工具集
  * @type {{Scopes}}
  * @see Scopes
