@@ -2,7 +2,9 @@
 
 Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
 
-[API Documentation](https://yeshimei.github.io/Handle.js/) | [GitHub](https://github.com/yeshimei/Handle.js) | [NPM](https://www.npmjs.com/package/handle.js)
+[![GitHub](https://img.shields.io/badge/GitHub-yeshimei-green.svg)](https://github.com/yeshimei/Handle.js) [![npm](https://img.shields.io/badge/npm-v0.0.2-blue.svg)](https://www.npmjs.com/package/handle.js) [![MIT](https://img.shields.io/npm/l/express.svg)](https://github.com/yeshimei/Handle.js)
+
+[API Documentation](https://yeshimei.github.io/Handle.js/)
 
 ## Installation
 
@@ -341,22 +343,18 @@ article.findAll(d => {
 }),
 ```
 
-## 原生数据（已更改）
+## 原生数据
 
-`create()` 将自动把 `d` 作为数据增加到数据库中。
-
-```javascript
-article.create()
-```
-
-但是，对于 `increment()` 你可能只想增加某个字段的值，你可以直接指定原生数据。
+Handle 会很聪明的生成 sequelize 方法的参数，一般情况下，我们无须关心。但是对于，increment，decrement 或一些特殊情况，你想要使用指定的数据，而**不是** Handle 帮你处理后的 Request Data（前端发送到后端的数据），可以通过 `raw()` 方法设置原生数据。
 
 ```javascript
-article.increment('comment_count', 'id')
+// 递增 hot 字段
+article
+  .raw('hot')
+  .increment('id')
 ```
 
-注意，原生数据在内部不会做任何处理。
-
+但是，你需要了解，Request Data 仍然会用于各种场景下，比如 Scope 和 where 子句简写的解析，只是在最后合成 sequelize 方法的参数时，Request Data 被替换成了 `rawData`，也就意味着，在钩子或者其他地方修改 Request Data 不会应用到数据库访问中。这一点，`mock()` 在批量添加数据时，就是在内部调用了 `raw()`。
 
 
 # Process
@@ -625,7 +623,7 @@ article.mock({
 })
 ```
 
-`mock()` 内部调用实例的 `bulkCreate()` 方法批量添加数据（注意，因为使用了原生数据入口，所以不会对数据做任何处理）
+`mock()` 内部调用实例的 `bulkCreate()` 方法批量添加数据（注意，因为使用了原生数据入口 `raw()`，所以不会对数据做任何处理）
 
 
 
