@@ -17,10 +17,10 @@ npm i handle.js --save
 ```javascript
 import Handle from 'handle.js'
 // 导入 sequelize 模型
-import { article } from '../models/db'
+import { Article } from '../models/db'
 
 // 把 article 传入 Handle，并实例化
-const article = new Handle(article)
+const article = new Handle(Article)
 
 // 生成一个查询当前模型所有数据的 koa 中间件
 const find = article.findAll()
