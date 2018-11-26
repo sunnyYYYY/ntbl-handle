@@ -1,4 +1,5 @@
 import merge from 'merge'
+import Mock from 'mockjs'
 import {
   getOp,
   getRequestData,
@@ -185,30 +186,22 @@ function transaction (method, f) {
  * 向数据库中批量插入由 mock 生成的随机数据
  * @memberOf Handle
  * @instance
+ * @param {mock} [count=1] - 几条数据
  * @param {object} rule - mock 的生成规则
  * @example
  *
- * // 生成 10 条数据（mockjs 为例）
- * h.mock({
- *  'data|10': [
- *    {
- *      title: '@ctitle',
- *      content: '@cparagraph',
- *    }
- *  ]
+ * // 批量向 article 表中插入 20 条数据
+ * article.mock(20, {
+ *   title: '@ctitle',
+ *   content: '@cparagraph'
  * })
+ *
  *
  * @returns {*}
  */
-function mock (rule) {
-  const Mock = this.options.mock
-  if (!Mock) error(
-    'Handle.prototype.mock 方法依赖 mock 库，推荐使用 mockjs' +
-    '\n npm install mockjs --save' +
-    '\n 然后，在 Handle.options.mock = Mock 使用指定的 mock 库'
-  )
-
-  return this.raw(Mock.mock(rule).data).bulkCreate()
+function mock (count, rule) {
+  if (isObj(count)) [count, rule] = [1, count]
+  return this.raw(Mock.mock({[`data|${count}`]: [rule]}).data).bulkCreate()
 }
 
 

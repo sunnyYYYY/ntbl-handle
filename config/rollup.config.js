@@ -22,7 +22,7 @@ const getConfig = format => {
       name,
     },
     plugins: [].concat(min && terser()),
-    external: ['merge', 'escape-string-regexp', 'glob', 'path', 'chalk'],
+    external: ['merge', 'escape-string-regexp', 'glob', 'path', 'chalk', 'mockjs'],
   }
 }
 
