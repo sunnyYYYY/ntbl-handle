@@ -1,4 +1,4 @@
-import _merge from 'merge'
+import merge from 'merge'
 import {
   isObj,
   getOp,
@@ -58,10 +58,27 @@ let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[fie
  */
 let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[field]}%`])
 
+/**
+ * 单条件测试，相当于把语法结构中 if 语句变成了函数的写法
+ *
+ * @param {string|function} condition - 用于 request data 的条件
+ * @param {array|function} f1 - 测试成功时执行
+ * @param {array|function} [f2] - 测试失败时执行
+ */
+export let it = (condition, f1, f2 = noop) => d => (typeof condition === 'function' ? condition(d): d[condition]) ? wrapper(f1) : wrapper(f2)
+
+
+function wrapper(value, d) {
+  return merge.recursive(true, {}, ...((Array.isArray(value) ? value : [value]).map(f => f(d))))
+
+}
+
+
 export default {
   where,
   fuzzyQuery,
   fuzzyQueryLeft,
   fuzzyQueryRight,
   pagination,
+  it
 }
