@@ -1,12 +1,14 @@
 import { expect } from 'chai'
 import {
   getOp,
-  tailspin
+  tailspin,
 } from '../../src/utils'
+
+import scopes from '../../src/scopes'
 
 describe('utils test', () => {
   it('getOp# 字符串', () => {
-    expect(getOp('foo', {foo: 2})).deep.equal({where: {foo: {and: 2}}})
+    expect(getOp('foo', {foo: 2})).deep.equal({where: {foo: 2}})
   })
 
   it('getOp# 数组', () => {
@@ -73,4 +75,37 @@ describe('utils test', () => {
       }
     }, 'a.b[3].c')).equal(10)
   })
+})
+
+
+describe('scopes utils', () => {
+  const requestData = {
+    comment: true,
+    count: 3
+  }
+
+  it('it# 布尔值', () => {
+    expect(scopes.it(false, () => ({result: 1}), [() => ({result: 2}), (d) => ({_count: d.count})])(requestData)).deep.equal({result: 2, _count: 3})
+  })
+
+
+  it('it# 字段', () => {
+    expect(scopes.it('comment', () => ({result: 1}), () => ({result: 2}))(requestData)).deep.equal({result: 1})
+  })
+
+  it('it# 函数', () => {
+    expect(scopes.it(d => d.count > 2, () => ({result: 1}), () => ({result: 2}))(requestData)).deep.equal({result: 1})
+  })
+
+  it('itField#', () => {
+    const data = {
+      'name': d => ({result: 1}),
+      'age': [d => ({result: 2}), d => ({_count: d.count})],
+    }
+    requestData.sort = 'name'
+    expect(scopes.itField('sort', data)(requestData)).deep.equal({result: 1})
+    requestData.sort = 'age'
+    expect(scopes.itField('sort', data)(requestData)).deep.equal({result: 2, _count: 3})
+  })
+
 })

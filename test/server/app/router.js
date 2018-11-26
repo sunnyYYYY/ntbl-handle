@@ -11,8 +11,11 @@ router
   .get('/where/str', api.str)
   .get('/where/multiple', api.multiple)
   .get('/scopes/fuzzyQuery', api.fuzzyQuery)
-  .post('/instance/options/raw', api.raw)
+  .get('/instance/options/raw', api.raw)
   .post('/instance/options/method', api.method)
+  .get('/process', api.process)
+  .post('/process/method/post', api.processMethodPost)
+  .get('/process/raw', api.processRaw)
 
 import api from './controllers/api'
 

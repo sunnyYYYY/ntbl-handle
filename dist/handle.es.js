@@ -1,5 +1,5 @@
 /*!
- * handle v0.0.2
+ * handle v0.0.3
  * (c) 2017-2018 Sunny
  * Released under the MIT License.
  */
@@ -14,6 +14,7 @@ const PATTERN_IDENTIFIER = /[A-Za-z_][A-Za-z0-9_]*/;
 let requestMethods = ['get', 'head', 'put', 'delete', 'post', 'options'];
 
 let isObj = value => Object.prototype.toString.call(value) === '[object Object]';
+let noop = () => {};
 let error = (msg, msg2 = '') => {
   console.error(chalk.bgRed(' ERROR ') + ' ' + chalk.red(msg) + (msg2 ? ' ☞ ' +  chalk.gray(msg2) : ''));
   process.exit(1);
@@ -338,7 +339,6 @@ var Include = {
 /**
  * where 子句简写支持
  * @param options {string|array|object|function}
- * @returns {function(*=): {where}}
  */
 let where = (...options) => d => getOp(options, d);
 
@@ -347,7 +347,6 @@ let where = (...options) => d => getOp(options, d);
  * 分页
  * @param {number} [defaultCount=5] -每页的默认数量
  * @param {number} [defaultPage=0] - 默认从第 0 页开始
- * @returns {Object}
  */
 let pagination = (defaultCount = 5, defaultPage = 0) => {
   return d => {
@@ -360,11 +359,9 @@ let pagination = (defaultCount = 5, defaultPage = 0) => {
   }
 };
 
-
 /**
  * 模糊查询
  * @param field
- * @returns {function(*=): {where}}
  */
 let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[field]}%`]);
 
@@ -372,23 +369,119 @@ let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[field]}
 /**
  * 左模糊查询
  * @param field
- * @returns {function(*=): {where}}
  */
 let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[field]}`]);
 
 /**
  * 右模糊查询
  * @param field
- * @returns {function(*=): {where}}
  */
 let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[field]}%`]);
+
+
+/**
+ * 添加关联
+ * @param args
+ */
+let include = (...args) => d => ({include: args});
+
+/**
+ * 添加排序
+ * @param args
+ */
+let order = (...args) => d => ({order: args});
+
+/**
+ * 移除 request data 中的字段
+ *
+ * @param keys
+ */
+let remove$1 = (...keys) => d => {
+  for (let key in keys) {
+    if (d.hasOwnProperty(key)) delete d[key];
+  }
+
+  return {}
+};
+
+
+/**
+ * 设置 request data 中的字段
+ *
+ * @param key
+ * @param value
+ */
+let set = (key, value) => d => {
+  d[key] = value;
+  return {}
+};
+
+
+/**
+ * 将多个选项函数返回的选项对象或选项对象合并为一个
+ *
+ * @param funcs
+ */
+let merge$1 = (...funcs) => d => merge.recursive(true, {}, ...(funcs.map(f => typeof f === 'function' ? f(d) : f)));
+
+
+function wrapper (v) {
+  return Array.isArray(v) ? v : [v]
+}
+
+/**
+ * 单条件测试，相当于把语法结构中 if 语句变成了函数的写法
+ *
+ * @param {string|function} condition - 用于 request data 的条件
+ * @param {array|object|function} f1 - 测试成功时执行
+ * @param {array|object|function} [f2] - 测试失败时执行
+ */
+let it = (condition, f1, f2 = noop) => d => (typeof condition === 'boolean' ? condition : typeof condition === 'function' ? condition(d): d[condition]) ? merge$1(...wrapper(f1))(d) : merge$1(...wrapper(f2))(d);
+
+
+/**
+ *
+ * it 的反向版本
+ *
+ * @param {string|function} condition - 用于 request data 的条件
+ * @param {array|function} f1 - 测试失败时执行
+ * @param {array|function} [f2] - 测试成功时执行
+ */
+let not = (condition, f1, f2 = noop) => it(condition, f2, f1);
+
+
+/**
+ *
+ * 测试指定字段的多个值（相当于语句结构中的 switch）
+ *
+ * @param field
+ * @param conditions
+ * @example
+ * itField('sort', {
+ *  'name': f1,           // 当 d.sort = 'name' 时执行
+ *  'age': [f2, f3],      // 当 d.sort = 'age'  时执行
+ *  'height': f4          // 当 d.sort = 'height' 时执行
+ * })
+ */
+let itField = (field, conditions) => d => {
+  const condition = d[field];
+  return it(true, conditions[condition])(d)
+};
 
 var Scopes = {
   where,
   fuzzyQuery,
   fuzzyQueryLeft,
   fuzzyQueryRight,
+  include,
+  order,
   pagination,
+  remove: remove$1,
+  set,
+  it,
+  itField,
+  not,
+  merge: merge$1
 };
 
 /**
@@ -523,10 +616,10 @@ function rawScope(...scopes) {
  * @returns {Function}
  */
 function process$1 (method, f) {
-  if (!requestMethods.includes(method)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', method);
 
-  this.mode = true;
   if (typeof method === 'function') [f, method] = [method, 'get'];
+
+  if (!requestMethods.includes(method)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', method);
 
   return async (ctx, next) => {
     let data = getRequestData(method, ctx);
@@ -587,7 +680,7 @@ function mock (rule) {
 
 
 
-function __internal (name, ...args) {
+function __internal (name, ...options) {
   let {defaultScopes} = this;
   let {method, rawData, scopes} = this.__reset();
 
@@ -597,21 +690,20 @@ function __internal (name, ...args) {
       || tailspin(this, `options.proxy${name}.method`)
       || tailspin(Handle, `defaults.proxy${name}.method`)
       || 'get';
-
+    
     // 获取数据
     let data = getRequestData(requestMethod, ctx);
 
     try {
       data = this.__callHook('before', data, ctx, next);
       // where 子句简写解析
-      let opts = getOp(args, data);
+      let opts = getOp(options, data);
       // 混合作用域
       opts = mixinScope(data, opts, defaultScopes, scopes);
       // 原生数据
       if (rawData) {
         data = typeof rawData === 'function' ? rawData(data) : rawData;
       }
-
       // 生成调用方法的参数
       opts = [data, opts].slice(-this.model[name].length);
       // 调用方法
@@ -624,11 +716,18 @@ function __internal (name, ...args) {
     }
   }
 }
-async function __process (name, scopes, ...options) {
-  // if (options == null) [d, options] = [undefined, d]
+async function __process (name, ...options) {
+
+  let {defaultScopes} = this;
+  let {rawData, scopes} = this.__reset();
+
   let data = this._data;
   let opts = getOp(options, data);
-  opts = mixinScope(data, opts, this.defaultScopes, scopes);
+  opts = mixinScope(data, opts, defaultScopes, scopes);
+  if (rawData) {
+    data = typeof rawData === 'function' ? rawData(data) : rawData;
+  }
+  console.log(opts);
   opts = [data, opts].slice(-this.model[name].length);
   return  await this.model[name](...opts)
 }

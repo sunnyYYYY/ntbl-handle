@@ -1,6 +1,6 @@
 {
   "name": "handle.js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "一个基于 koa 和 sequelize 的中间库, 让你只专注于接口逻辑。",
   "main": "dist/handle.cjs.js",
   "module": "dist/handle.es.js",
