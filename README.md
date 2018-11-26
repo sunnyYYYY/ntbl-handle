@@ -1,8 +1,8 @@
 # Handle.js
 
-Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
+[![GitHub](https://img.shields.io/badge/GitHub-yeshimei-green.svg)](https://github.com/yeshimei/Handle.js) [![npm](https://img.shields.io/badge/npm-v0.0.3-blue.svg)](https://www.npmjs.com/package/handle.js) [![MIT](https://img.shields.io/npm/l/express.svg)](https://github.com/yeshimei/Handle.js)
 
-[![GitHub](https://img.shields.io/badge/GitHub-yeshimei-green.svg)](https://github.com/yeshimei/Handle.js) [![npm](https://img.shields.io/badge/npm-v0.0.2-blue.svg)](https://www.npmjs.com/package/handle.js) [![MIT](https://img.shields.io/npm/l/express.svg)](https://github.com/yeshimei/Handle.js)
+Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
 
 [API Documentation](https://yeshimei.github.io/Handle.js/)
 
@@ -455,7 +455,7 @@ articleStar.process(async function (d) {
 
 
 
-`scope()` 方法合并的选项对象**仅在第一次被使用的方法上有效**。如果，想要让所有当前实例的模型方法都共享某些 scope ，可以在实例上通过 `defaultScope()` 添加。==注意，每个 `scope` 都必须最终返回一个选项对象，而不是其中的一部分。==
+`scope()` 方法合并的选项对象**仅在第一次被使用的方法上有效**。如果，想要让所有当前实例的模型方法都共享某些 scope ，可以在实例上通过 `defaultScope()` 添加。**注意，每个 `scope` 都必须最终返回一个选项对象，而不是其中的一部分。**
 
 
 # Include
@@ -505,26 +505,67 @@ articleStar.process(async function (d) {
 
 `handle.js` 内置了一个 `Scopes` 工具集，封装了一些常用的接口逻辑，帮助你快速编写复杂的接口，让你充分利用 `scope` 封装所带来的优良特性。
 
-==（目前，还在积极收集和考虑高频的接口逻辑，欢迎大家提供 Scope 建议或代码片段）==
+**（目前，还在积极收集和考虑高频的接口逻辑，欢迎大家提供建议或代码片段）**
 
-```js
+```javascript
 const Scopes = Handle.Scopes
-const {where, pagination, fuzzyQuery} = Scopes
+const {where, pagination, fuzzyQuery, include, order, it, itField} = Scopes
 ```
 
-**where**
-
-where 子句简写支持，用法与实例方法一致。
-
-**fuzzyQuery(field = 'name')**
-
-模糊查询
+一个使用了 scope utils 的接口的代码结构看起来条理分明。
 
 ```javascript
 article
-    .scope(fuzzyQuery('title'))
-    .findAll()
-/* 内部将替换成
+  .scope(
+    where(
+      // 通过 id 查询
+      '!id'
+      // 或通过 user_id 查询 uid 字段（指定用户）
+      ['!uid', '@user_id']
+      // 或两者都同时，指定用户中的指定 id
+    ),
+    // super 是内部判断是否是付费用户的状态值
+    it('super',
+      // 付费用户公开所有付费文章
+      where(['money': true]),
+      // 免费用户只能查询免费的文章
+      where(['money': false])
+    ),
+    itField('sort', {
+      // 当 sort = createdAt 时, 按创建日期降序排序
+      'createdAt': order(['createdAt', 'DESC']),
+      // 当 sort = hot 时, 按热度降序排序
+      'hot': order(['hot', 'DESC'])
+    }),
+    // 分页
+    pagination(10),
+    // 关联，一并查询并返回文章的用户、评论、收藏信息
+    include(User, Article_comment, Article_star),
+    // 通过 name, 模糊查询
+    fuzzyQuery('name'),
+  ).findAndCountAll()
+```
+
+
+## 选项函数
+
+选项函数把接口中常见的逻辑抽离封装，通过组合可以为你快速堆砌出一个复杂的接口实现。
+
+### where
+
+> 请参考 where 子句简写一节（两者用法一致）
+
+### fuzzyQuery
+
+> 模糊查询
+
+fuzzyQuery(field?)
+- string  **field='name'：**  字段名
+
+
+```javascript
+fuzzyQuery('title')
+/*
 {
     where: {
         title: {
@@ -536,20 +577,18 @@ article
 */
 ```
 
-此外，还有 fuzzyQueryLeft/fuzzyQueryRight 左模糊查询和右模糊查询。
+此外，还有 **fuzzyQueryLeft**/**fuzzyQueryRight** 左模糊查询和右模糊查询。
 
-**pagination(page = 0, count = 5)**
+### pagination
 
-分页
+> 分页
 
-- page = 0：页数
-- count = 5：每页的数量
+pagination(page?, count?)
+- number **page = 0：** 页数
+- number **count = 5：** 每页的数量
 
 ```javascript
-article
-    .scope(pagination(10))
-    .findAll()
-
+pagination(10)
 /*
   {
     limit: d.count,
@@ -558,7 +597,135 @@ article
 */
 ```
 
+### include
 
+> 添加关联（如果添加的关联存在层级，建议使用 Include 管理并生成）
+
+include(...args)
+
+```javascript
+include(User, Comment)
+/*
+  {
+    include: [User, Comment]
+  }
+*/
+```
+
+### order
+
+> 添加关联（如果添加的关联存在层级，建议使用 Include 管理并生成）
+
+
+```javascript
+order(['createdAt', 'DESC'])
+/*
+  {
+    order: [['createdAt', 'DESC']]
+  }
+*/
+```
+
+
+## 辅助函数
+
+辅助函数是帮助你更好的组合选项函数和处理一些特殊情况，包含：
+- 接口逻辑存在分支（比如 if/switch）
+- 改动 sequest data（比如，权限分化）
+
+### it
+
+> 单条件测试
+
+it(condition, f1, [f2])
+- string/function **condition：** 用于 request data 的条件
+- array/function **f1** 测试成功时执行
+- array/function **f2** 测试失败时执行
+
+相当于把语法结构中 if 语句变成了函数的写法，其语法为：
+
+```javascript
+it(条件, 条件成立时执行, 条件不成立时执行)
+```
+
+它只用于对 request data 单条件测试。
+
+```javascript
+// 字段
+// 当 d.comment == ture 时， 执行 f1，否则 f2
+// 请注意，内部使用相等比较
+it('comment', f1, f2)
+
+// 函数
+// 当 d.count 大于 2 时， 执行 f1，否则 f2
+it(d => d.count > 2, f1, f2)
+
+// 其他，f1, f2。 可以为一个函数或者一个函数数组
+it('comment', f1, [f1, f2, f3])
+
+// 不成立的条件执行可以省略
+it('comment', [f1, f2, f3])
+```
+
+### not
+
+> it 的反向版本
+
+```javascript
+// 当 d.comment == false 时， 执行 f1，否则 f2
+it('comment', f1, f2)
+```
+
+### itField
+
+itField(key, conditions)
+- string **key：** request data 的 key
+- object **conditions：** 测试对象
+
+> 测试指定字段的多个值（相当于语句结构中的 switch）
+
+```javascript
+itField('sort', {
+  'name': f1,           // 当 d.sort = 'name' 时执行
+  'age': [f2, f3],      // 当 d.sort = 'age'  时执行
+  'height': f4          // 当 d.sort = 'height' 时执行
+})
+```
+
+
+
+
+### set
+
+> 设置 request data 中的字段
+
+set(key, value)
+
+```javascript
+set('status', 'fall')
+```
+
+### remove
+
+> 移除 request data 中的字段
+
+remove(...keys)
+
+```javascript
+remove('foo', 'bar')
+```
+
+### merge
+
+> 将多个选项函数返回的选项对象或选项对象合并为一个
+
+## 一句话
+
+一句话，如果你在 scope utils 找不到可以帮你解决问题的函数时，我强烈建议你把相关代码封装成一个 scope 在使用，其一是你会有个优雅的代码结构和可读的命名，其二，当在其他地方复用时你必须再重新写一遍。如果你的 scope 足够通用时，你可以提交到 handle.js 中，为更多的人提供便利。
+
+**如果你不使用 pull requests 或 Issues，也可以通过以下方式联系到我：**
+- **qq ☞** 1669982549
+- **email ☞** hsy.ntbl@gmail.com
 
 # 事务
 
@@ -635,7 +802,7 @@ Handle 做为中间库，不会更改 sequelize 原生用法，它只关注一�
 
 但是，由于一些轮子依赖，在某些特定情况会产生一些约束，这些约束都会在这里指出，并在后续版本中解决，了解它们，可以更好的帮助你使用 Handle。
 
-1. **很遗憾，你无法使用 Sequelize.Op**，但是可以使用字符串标识替代（但是在 v5 中会抛出一个废弃警告），原因是 Op 返回的是一个 Symbol 类型，作为对象的 key 使用时 Handle 所依赖的 `merger` 无法深度合并 Symbol，导致数据丢失。
+1. **很遗憾，你无法使用 Sequelize.Op**，但是可以使用字符串标识替代（但是在 v5 中会抛出一个废弃警告），原因是 Op 返回的是一个 Symbol 类型，作为对象的 key 使用时 Handle 所依赖的 `merge` 无法深度合并 Symbol，导致数据丢失。
 
 ```javascript
 // 会丢失
@@ -661,5 +828,3 @@ article
 # 插件系统
 
 （暂无）
-
-
