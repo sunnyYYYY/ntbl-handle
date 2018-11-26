@@ -1,6 +1,6 @@
 # Handle.js
 
-[![GitHub](https://img.shields.io/badge/GitHub-yeshimei-green.svg)](https://github.com/yeshimei/Handle.js) [![npm](https://img.shields.io/badge/npm-v0.0.3-blue.svg)](https://www.npmjs.com/package/handle.js) [![MIT](https://img.shields.io/npm/l/express.svg)](https://github.com/yeshimei/Handle.js)
+[![GitHub](https://img.shields.io/badge/GitHub-yeshimei-green.svg)](https://github.com/yeshimei/Handle.js) [![npm](https://img.shields.io/badge/npm-v0.0.2-blue.svg)](https://www.npmjs.com/package/handle.js) [![MIT](https://img.shields.io/npm/l/express.svg)](https://github.com/yeshimei/Handle.js)
 
 Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
 
@@ -59,7 +59,7 @@ router.get('article/find', find)
 ```javascript
 const find = artcile.process(async function (d) {
     // 查询用户
-    const userData = await u, findOne(['username', 'password'])
+    const userData = await user.rawFindOne(['username', 'password'])
     // 查询当前用户的文章
     const result = await this.rawFindAll([['id', userData.id]])
     // 仅返回被推荐的文章
@@ -764,35 +764,18 @@ new Handle(model, {
 
 # Mock 支持
 
-Handle.js 提供了 mock 的接口，但它依赖于 mock 库。这里，我推荐使用 [mockjs](https://github.com/nuysoft/Mock)。
+Handle 提供了 mock 的接口，它使用了 [mockjs](https://github.com/nuysoft/Mock) 库。
 
-首先，你需要通过选项对象传入 mock 库以开启 `mock()` 方法
-
-```javascript
-import Mock from 'mockjs'
-
-// 指定要使用 mockjs
-const article = new Handle(Article)
-article.options.mock = Mock
-```
-
-然后，使用实例的 `mock()` 方法。
 
 ```javascript
 // 批量向 article 表中插入 20 条数据
-article.mock({
- 'data|20': [
-   {
-     title: '@ctitle',
-     content: '@cparagraph'
-   }
- ]
+article.mock(20, {
+  title: '@ctitle',
+  content: '@cparagraph'
 })
 ```
 
 `mock()` 内部调用实例的 `bulkCreate()` 方法批量添加数据（注意，因为使用了原生数据入口 `raw()`，所以不会对数据做任何处理）
-
-
 
 
 
