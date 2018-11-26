@@ -149,10 +149,10 @@ function rawScope(...scopes) {
  * @returns {Function}
  */
 function process (method, f) {
-  if (!requestMethods.includes(method)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', method)
 
-  this.mode = true
   if (typeof method === 'function') [f, method] = [method, 'get']
+
+  if (!requestMethods.includes(method)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', method)
 
   return async (ctx, next) => {
     let data = getRequestData(method, ctx)
@@ -213,7 +213,7 @@ function mock (rule) {
 
 
 
-function __internal (name, ...args) {
+function __internal (name, ...options) {
   let {defaultScopes} = this
   let {method, rawData, scopes} = this.__reset()
 
@@ -223,21 +223,20 @@ function __internal (name, ...args) {
       || tailspin(this, `options.proxy${name}.method`)
       || tailspin(Handle, `defaults.proxy${name}.method`)
       || 'get'
-
+    
     // 获取数据
     let data = getRequestData(requestMethod, ctx)
 
     try {
       data = this.__callHook('before', data, ctx, next)
       // where 子句简写解析
-      let opts = getOp(args, data)
+      let opts = getOp(options, data)
       // 混合作用域
       opts = mixinScope(data, opts, defaultScopes, scopes)
       // 原生数据
       if (rawData) {
         data = typeof rawData === 'function' ? rawData(data) : rawData
       }
-
       // 生成调用方法的参数
       opts = [data, opts].slice(-this.model[name].length)
       // 调用方法
@@ -250,11 +249,18 @@ function __internal (name, ...args) {
     }
   }
 }
-async function __process (name, scopes, ...options) {
-  // if (options == null) [d, options] = [undefined, d]
+async function __process (name, ...options) {
+
+  let {defaultScopes} = this
+  let {rawData, scopes} = this.__reset()
+
   let data = this._data
   let opts = getOp(options, data)
-  opts = mixinScope(data, opts, this.defaultScopes, scopes)
+  opts = mixinScope(data, opts, defaultScopes, scopes)
+  if (rawData) {
+    data = typeof rawData === 'function' ? rawData(data) : rawData
+  }
+  console.log(opts)
   opts = [data, opts].slice(-this.model[name].length)
   return  await this.model[name](...opts)
 }
