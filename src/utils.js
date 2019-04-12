@@ -35,7 +35,7 @@ export let load = (sequelize, dir, options) => {
       error('You may not have passed in the Sequelie instance, it imports the model using import.')
     }
 
-    error('Please check the path, it may be wrong.', dir)
+    error(e)
   }
 }
 
@@ -49,7 +49,9 @@ export let loadAll = function (sequelize, dir, options = {}) {
   return glob
     .sync(path.join(dir, rule))
     .reduce((ret, file) => {
-      ret[path.parse(file).name] = this.load(sequelize, file, options)
+      const name = path.parse(file).name
+      ret[name] = this.load(sequelize, file, options)
+      ret['_' + name] = ret[name].model
       return ret
     }, {})
 }
