@@ -213,8 +213,8 @@ function __internal (name, ...options) {
   return async (ctx, next) => {
     // 获取请求方法
     const requestMethod = method
-      || tailspin(this, `options.proxy${name}.method`)
-      || tailspin(Handle, `defaults.proxy${name}.method`)
+      || tailspin(this, `options.proxy.${name}.method`)
+      || tailspin(Handle, `defaults.proxy.${name}.method`)
       || 'get'
     
     // 获取数据
