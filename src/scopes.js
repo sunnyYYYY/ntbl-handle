@@ -71,9 +71,9 @@ let order = (...args) => d => ({order: args})
  * @param keys
  */
 let remove = (...keys) => d => {
-  for (let key in keys) {
-    if (d.hasOwnProperty(key)) delete d[key]
-  }
+  keys.forEach(key => {
+    if (key in d) delete d[key]
+  })
 
   return {}
 }
