@@ -1,6 +1,6 @@
 /*!
- * handle v0.0.4
- * (c) 2017-2018 Sunny
+ * handle v0.0.5
+ * (c) 2017-2019 Sunny
  * Released under the MIT License.
  */
 'use strict';
@@ -39,7 +39,7 @@ let load = (sequelize, dir, options) => {
       error('You may not have passed in the Sequelie instance, it imports the model using import.');
     }
 
-    error('Please check the path, it may be wrong.', dir);
+    error(e);
   }
 };
 
@@ -53,7 +53,9 @@ let loadAll = function (sequelize, dir, options = {}) {
   return glob
     .sync(path.join(dir, rule))
     .reduce((ret, file) => {
-      ret[path.parse(file).name] = this.load(sequelize, file, options);
+      const name = path.parse(file).name;
+      ret[name] = this.load(sequelize, file, options);
+      ret['_' + name] = ret[name].model;
       return ret
     }, {})
 };
@@ -402,9 +404,9 @@ let order = (...args) => d => ({order: args});
  * @param keys
  */
 let remove$1 = (...keys) => d => {
-  for (let key in keys) {
-    if (d.hasOwnProperty(key)) delete d[key];
-  }
+  keys.forEach(key => {
+    if (key in d) delete d[key];
+  });
 
   return {}
 };
@@ -684,8 +686,8 @@ function __internal (name, ...options) {
   return async (ctx, next) => {
     // 获取请求方法
     const requestMethod = method
-      || tailspin(this, `options.proxy${name}.method`)
-      || tailspin(Handle, `defaults.proxy${name}.method`)
+      || tailspin(this, `options.proxy.${name}.method`)
+      || tailspin(Handle, `defaults.proxy.${name}.method`)
       || 'get';
     
     // 获取数据
