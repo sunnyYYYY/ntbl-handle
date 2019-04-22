@@ -12,6 +12,7 @@ export let requestMethods = ['get', 'head', 'put', 'delete', 'post', 'options']
 
 export let isObj = value => Object.prototype.toString.call(value) === '[object Object]'
 export let noop = () => {}
+
 export let error = (msg, msg2 = '') => {
   console.error(chalk.bgRed(' ERROR ') + ' ' + chalk.red(msg) + (msg2 ? ' ☞ ' +  chalk.gray(msg2) : ''))
   process.exit(1)

@@ -14,7 +14,6 @@ import {
   proxyNames,
   requestMethods
 } from './utils'
-import Include from "./inclue"
 import Scopes from './scopes'
 
 
@@ -51,7 +50,6 @@ Handle.prototype = {
   rawScope,
   process,
   transaction,
-  mock,
   __internal,
   __process,
   __reset,
@@ -131,6 +129,7 @@ function defaultScope (...scopes) {
   })
   return this
 }
+
 /**
  * 组合一个或多个 sequelize 作用域（一层简单的封装）
  * @memberOf Handle
@@ -141,6 +140,7 @@ function defaultScope (...scopes) {
 function rawScope(...scopes) {
   return new Handle(this.model.scope(...scopes), this.options)
 }
+
 /**
  * 启用一个过程
  * @memberOf Handle
@@ -169,6 +169,7 @@ function process (method, f) {
     }
   }
 }
+
 /**
  * 启用一个事务
  * @memberOf Handle
@@ -182,33 +183,13 @@ function transaction (method, f) {
     return await this.model.sequelize.transaction(t => f.call(this, d, ctx, next, t))
   })
 }
-/**
- * 向数据库中批量插入由 mock 生成的随机数据
- * @memberOf Handle
- * @instance
- * @param {mock} [count=1] - 几条数据
- * @param {object} rule - mock 的生成规则
- * @example
- *
- * // 批量向 article 表中插入 20 条数据
- * article.mock(20, {
- *   title: '@ctitle',
- *   content: '@cparagraph'
- * })
- *
- *
- * @returns {*}
- */
-function mock (count, rule) {
-  if (isObj(count)) [count, rule] = [1, count]
-  return this.raw(Mock.mock({[`data|${count}`]: [rule]}).data).bulkCreate()
-}
-
 
 
 function __internal (name, ...options) {
-  let {defaultScopes} = this
-  let {method, rawData, scopes} = this.__reset()
+  let { defaultScopes } = this
+  // 在闭包中保存当前方法的请求方法、原生数据和作用域
+  // 然后重置它们的容器，以便收集下次调用时传入的新数据
+  let { method, rawData, scopes } = this.__reset()
 
   return async (ctx, next) => {
     // 获取请求方法
@@ -216,16 +197,14 @@ function __internal (name, ...options) {
       || tailspin(this, `options.proxy.${name}.method`)
       || tailspin(Handle, `defaults.proxy.${name}.method`)
       || 'get'
-    
+
     // 获取数据
     let data = getRequestData(requestMethod, ctx)
 
     try {
       data = this.__callHook('before', data, ctx, next)
-      // where 子句简写解析
-      let opts = getOp(options, data)
       // 混合作用域
-      opts = mixinScope(data, opts, defaultScopes, scopes)
+      let opts = mixinScope(data, defaultScopes, scopes)
       // 原生数据
       if (rawData) {
         data = typeof rawData === 'function' ? rawData(data) : rawData
@@ -242,18 +221,18 @@ function __internal (name, ...options) {
     }
   }
 }
+
+
 async function __process (name, ...options) {
 
   let {defaultScopes} = this
   let {rawData, scopes} = this.__reset()
 
   let data = this._data
-  let opts = getOp(options, data)
-  opts = mixinScope(data, opts, defaultScopes, scopes)
+  let opts = mixinScope(data, defaultScopes, scopes)
   if (rawData) {
     data = typeof rawData === 'function' ? rawData(data) : rawData
   }
-  console.log(opts)
   opts = [data, opts].slice(-this.model[name].length)
   return  await this.model[name](...opts)
 }
@@ -261,7 +240,7 @@ async function __process (name, ...options) {
 function __reset() {
   let _opts = this._opts
   this._opts = {
-    scopes: [],
+    scopes: [],,
   }
 
   if (_opts) {
@@ -270,10 +249,14 @@ function __reset() {
 
   return _opts
 }
+
 function __callHook (name, ...args) {
+  // 获取钩子函数
   const hook = this.options[name]
+
   return hook && typeof hook === 'function'
     ? hook(...args)
+    // TODO #1
     : args.length === 3 ? args[0] : args[1]
 }
 
@@ -281,21 +264,29 @@ Handle.defaults = {
   proxy: {},
 }
 
-for (let method in proxyNames) {
-  const value = proxyNames[method]
-  value.forEach(name => {
 
+// 在原型上挂载快捷和过程方法
+for (let method in proxyNames) {
+  proxyNames[method].forEach(name => {
+    // 设置每个快捷方法的默认请求方法
     Handle.defaults.proxy[name] = { method }
 
+    // 快捷方法
     Handle.prototype[name] = function (...args) {
       return this.__internal(name, ...args)
     }
 
+    // 过程方法
     Handle.prototype['raw' + initialCap(name)] = function (...args) {
       return this.__process(name, ...args)
     }
   })
 }
+
+
+
+
+
 
 
 /**
@@ -321,12 +312,6 @@ Handle.loadAll = loadAll
 
 
 
-/**
- * 关联查询的辅助对象
- * @type {Include}
- * @see Include
- */
-Handle.Include = Include
 /**
  *
  * scopes 工具集

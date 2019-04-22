@@ -10,11 +10,15 @@ import {
  * @module Handle.Scopes
  */
 
+
+
 /**
  * where 子句简写支持
  * @param options {string|array|object|function}
  */
-let where = (...options) => d => getOp(options, d)
+export let where = (...options) => d => getOp(options, d)
+
+
 
 
 /**
