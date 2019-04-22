@@ -97,15 +97,14 @@ describe('scopes utils', () => {
     expect(scopes.it(d => d.count > 2, () => ({result: 1}), () => ({result: 2}))(requestData)).deep.equal({result: 1})
   })
 
-  it('itField#', () => {
+  it('more#', () => {
     const data = {
       'name': d => ({result: 1}),
       'age': [d => ({result: 2}), d => ({_count: d.count})],
     }
     requestData.sort = 'name'
-    expect(scopes.itField('sort', data)(requestData)).deep.equal({result: 1})
+    expect(scopes.more('sort', data)(requestData)).deep.equal({result: 1})
     requestData.sort = 'age'
-    expect(scopes.itField('sort', data)(requestData)).deep.equal({result: 2, _count: 3})
+    expect(scopes.more('sort', data)(requestData)).deep.equal({result: 2, _count: 3})
   })
-
 })

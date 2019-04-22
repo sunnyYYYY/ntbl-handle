@@ -45,9 +45,11 @@ let loadAll = function (sequelize, dir, options = {}) {
   return glob.sync(path.join(dir, rule)).reduce((ret, file) => {
     const name = path.parse(file).name;
     ret[name] = this.load(sequelize, file, options);
-    ret['_' + name] = ret[name].model;
+    ret._models[name] = ret[name].model;
     return ret;
-  }, {});
+  }, {
+    _models: {}
+  });
 };
 /**
  * 生成模型方法的选项对象，支持 where 子句的快捷写法
@@ -96,16 +98,16 @@ let getRequestData = (method, ctx) => {
  * @private
  */
 
-let mixinScope = (d, target, defaultScope, scopes) => {
+let mixinScope = (d, defaultScope, scopes) => {
   let scopesAll = defaultScope.concat(scopes);
-  if (!scopesAll.length) return target;
+  if (!scopesAll.length) return {};
   let result = scopesAll.map(scope => {
     if (isObj(scope)) return scope;
     let res = scope(d);
     if (typeof res === 'function') res = scope()(d);else res = scope(d);
     return res;
   });
-  return merge.recursive(true, target, ...result);
+  return merge.recursive(true, ...result);
 };
 /**
  * 首字母大写
@@ -236,11 +238,11 @@ function parseSign(a, b, source, target) {
 let where = (...options) => d => getOp(options, d);
 /**
  * 分页
- * @param {number} [defaultCount=5] -每页的默认数量
+ * @param {number} [defaultCount=15] - 每页的默认数量
  * @param {number} [defaultPage=0] - 默认从第 0 页开始
  */
 
-let pagination = (defaultCount = 5, defaultPage = 0) => {
+let pagination = (defaultCount = 15, defaultPage = 0) => {
   return d => {
     const count = ~~d.count || defaultCount;
     const page = ~~d.page || defaultPage;
@@ -277,7 +279,7 @@ let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[fie
  */
 
 
-let include = (...args) => d => ({
+let include = args => d => ({
   include: args
 });
 /**
@@ -354,7 +356,7 @@ let not = (condition, f1, f2 = noop) => it(condition, f2, f1);
  * @param field
  * @param conditions
  * @example
- * itField('sort', {
+ * more('sort', {
  *  'name': f1,           // 当 d.sort = 'name' 时执行
  *  'age': [f2, f3],      // 当 d.sort = 'age'  时执行
  *  'height': f4          // 当 d.sort = 'height' 时执行
@@ -362,7 +364,7 @@ let not = (condition, f1, f2 = noop) => it(condition, f2, f1);
  */
 
 
-let itField = (field, conditions) => d => {
+let more = (field, conditions) => d => {
   const condition = d[field];
   return it(true, conditions[condition])(d);
 };
@@ -378,7 +380,7 @@ var Scopes = {
   remove,
   set,
   it,
-  itField,
+  more,
   not,
   merge: merge$1
 };
@@ -656,6 +658,16 @@ for (let method in proxyNames) {
       return this.__process(name, ...args);
     };
   });
+} // 在原型上添加工具方法
+
+
+for (let name in Scopes) {
+  const scope = Scopes[name];
+
+  Handle.prototype[name] = function (...args) {
+    this.scope(args.length ? scope(...args) : scope);
+    return this;
+  };
 }
 /**
  *
