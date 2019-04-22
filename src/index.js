@@ -240,7 +240,7 @@ async function __process (name, ...options) {
 function __reset() {
   let _opts = this._opts
   this._opts = {
-    scopes: [],,
+    scopes: [],
   }
 
   if (_opts) {

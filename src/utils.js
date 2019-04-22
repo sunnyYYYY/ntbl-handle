@@ -52,9 +52,9 @@ export let loadAll = function (sequelize, dir, options = {}) {
     .reduce((ret, file) => {
       const name = path.parse(file).name
       ret[name] = this.load(sequelize, file, options)
-      ret['_' + name] = ret[name].model
+      ret._models[name] = ret[name].model
       return ret
-    }, {})
+    }, {_models: {}})
 }
 
 
