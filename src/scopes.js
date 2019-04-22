@@ -19,14 +19,12 @@ import {
 export let where = (...options) => d => getOp(options, d)
 
 
-
-
 /**
  * 分页
- * @param {number} [defaultCount=5] -每页的默认数量
+ * @param {number} [defaultCount=15] - 每页的默认数量
  * @param {number} [defaultPage=0] - 默认从第 0 页开始
  */
-let pagination = (defaultCount = 5, defaultPage = 0) => {
+let pagination = (defaultCount = 15, defaultPage = 0) => {
   return d => {
     const count = ~~d.count || defaultCount
     const page = ~~d.page || defaultPage
@@ -61,7 +59,7 @@ let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[fie
  * 添加关联
  * @param args
  */
-let include = (...args) => d => ({include: args})
+let include = (args) => d => ({include: args})
 
 /**
  * 添加排序
@@ -135,13 +133,13 @@ let not = (condition, f1, f2 = noop) => it(condition, f2, f1)
  * @param field
  * @param conditions
  * @example
- * itField('sort', {
+ * more('sort', {
  *  'name': f1,           // 当 d.sort = 'name' 时执行
  *  'age': [f2, f3],      // 当 d.sort = 'age'  时执行
  *  'height': f4          // 当 d.sort = 'height' 时执行
  * })
  */
-let itField = (field, conditions) => d => {
+let more = (field, conditions) => d => {
   const condition = d[field]
   return it(true, conditions[condition])(d)
 }
@@ -157,7 +155,7 @@ export default {
   remove,
   set,
   it,
-  itField,
+  more,
   not,
   merge
 }

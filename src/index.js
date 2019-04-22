@@ -283,9 +283,14 @@ for (let method in proxyNames) {
   })
 }
 
-
-
-
+// 在原型上添加工具方法
+for (let name in Scopes) {
+  const scope = Scopes[name]
+  Handle.prototype[name] = function (...args) {
+    this.scope(args.length ? scope(...args) : scope)
+    return this
+  }
+}
 
 
 

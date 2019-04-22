@@ -110,9 +110,9 @@ export let getRequestData = (method, ctx) => {
  * @returns object
  * @private
  */
-export let mixinScope = (d, target, defaultScope, scopes) => {
+export let mixinScope = (d, defaultScope, scopes) => {
   let scopesAll = defaultScope.concat(scopes)
-  if (!scopesAll.length) return target
+  if (!scopesAll.length) return {}
   let result = scopesAll.map(scope => {
     if (isObj(scope)) return scope
     let res = scope(d)
@@ -120,7 +120,7 @@ export let mixinScope = (d, target, defaultScope, scopes) => {
     else res = scope(d)
     return res
   })
-  return merge.recursive(true, target, ...result)
+  return merge.recursive(true, ...result)
 }
 
 /**
