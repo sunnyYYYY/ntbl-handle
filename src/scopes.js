@@ -35,31 +35,37 @@ let pagination = (defaultCount = 15, defaultPage = 0) => {
   }
 }
 
+
+function fuzzyQueryFileid (field) {
+  return field[0] === '!' ? field.slice(1) : field
+}
+
+
 /**
  * 模糊查询
  * @param field
  */
-let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[field]}%`])
+let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[fuzzyQueryFileid(field)]}%`])
 
 
 /**
  * 左模糊查询
  * @param field
  */
-let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[field]}`])
+let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[fuzzyQueryFileid(field)]}`])
 
 /**
  * 右模糊查询
  * @param field
  */
-let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[field]}%`])
+let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[fuzzyQueryFileid(field)]}%`])
 
 
 /**
  * 添加关联
  * @param args
  */
-let include = (args) => d => ({include: args})
+let include = (...args) => d => ({include: args})
 
 /**
  * 添加排序

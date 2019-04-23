@@ -180,7 +180,6 @@ export let proxyNames = {
   get: [
     'findOne',
     'findAll',
-    'findById',
     'findOrCreate',
     'findAndCountAll',
     'findAndCount',
@@ -188,7 +187,7 @@ export let proxyNames = {
     'count',
     'max',
     'min',
-    'sun'
+    'sum'
   ],
 
   post: [

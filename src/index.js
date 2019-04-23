@@ -12,6 +12,7 @@ import {
   error,
   warn,
   proxyNames,
+  noop,
   requestMethods
 } from './utils'
 import Scopes from './scopes'
@@ -50,6 +51,8 @@ Handle.prototype = {
   rawScope,
   process,
   transaction,
+  before,
+  after,
   __internal,
   __process,
   __reset,
@@ -91,6 +94,18 @@ function raw(data) {
   this._opts.rawData = data
   return this
 }
+
+
+function before(f) {
+  this._opts.before = f
+  return this
+}
+
+function after(f) {
+  this._opts.after = f
+  return this
+}
+
 
 
 /**
@@ -150,7 +165,6 @@ function rawScope(...scopes) {
  * @returns {Function}
  */
 function process (method, f) {
-
   if (typeof method === 'function') [f, method] = [method, 'get']
 
   if (!requestMethods.includes(method)) error('Only the http standard request method is supported (' + requestMethods.join('/') + ')', method)
@@ -189,7 +203,7 @@ function __internal (name, ...options) {
   let { defaultScopes } = this
   // 在闭包中保存当前方法的请求方法、原生数据和作用域
   // 然后重置它们的容器，以便收集下次调用时传入的新数据
-  let { method, rawData, scopes } = this.__reset()
+  let { method, rawData, scopes, before, after} = this.__reset()
 
   return async (ctx, next) => {
     // 获取请求方法
@@ -202,6 +216,7 @@ function __internal (name, ...options) {
     let data = getRequestData(requestMethod, ctx)
 
     try {
+      typeof before === 'function' && (data =  before(data, ctx, next))
       data = this.__callHook('before', data, ctx, next)
       // 混合作用域
       let opts = mixinScope(data, defaultScopes, scopes)
@@ -213,8 +228,8 @@ function __internal (name, ...options) {
       opts = [data, opts].slice(-this.model[name].length)
       // 调用方法
       let result = await this.model[name](...opts)
-
       result = this.__callHook('after', result, ctx, next)
+      typeof after === 'function' && (result =  after(result, ctx, next))
       return ctx.body = this.__callHook('data', null, result, ctx, next)
     } catch (err) {
       return ctx.body = this.__callHook('data', err, ctx, next)
