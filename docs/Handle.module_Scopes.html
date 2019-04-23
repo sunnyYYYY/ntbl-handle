@@ -142,6 +142,70 @@
     
 
     
+        <h3 class="subsection-title">Members</h3>
+
+        <dl>
+            
+<hr>
+<dt class="name" id=".where">
+    <h4 id=".where"><span class="type-signature">&lt;static> </span>where<span class="type-signature"></span></h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        where 子句简写支持
+    </div>
+    
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+        </dl>
+    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -893,7 +957,141 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="~itField"><span class="type-signature">&lt;inner> </span>itField(field, conditions)</h4>
+    <h4 class="name" id="~merge"><span class="type-signature">&lt;inner> </span>merge(funcs)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        将多个选项函数返回的选项对象或选项对象合并为一个
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Argument</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>funcs</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="~more"><span class="type-signature">&lt;inner> </span>more(field, conditions)</h4>
     
     
 </dt>
@@ -1029,142 +1227,8 @@
     
         <h5>Example</h5>
         
-    <pre class="sunlight-highlight-javascript">itField(&#x27;sort&#x27;, { &#x27;name&#x27;: f1,           // 当 d.sort = &#x27;name&#x27; 时执行 &#x27;age&#x27;: [f2, f3],      // 当 d.sort = &#x27;age&#x27;  时执行 &#x27;height&#x27;: f4          // 当 d.sort = &#x27;height&#x27; 时执行})</pre>
+    <pre class="sunlight-highlight-javascript">more(&#x27;sort&#x27;, { &#x27;name&#x27;: f1,           // 当 d.sort = &#x27;name&#x27; 时执行 &#x27;age&#x27;: [f2, f3],      // 当 d.sort = &#x27;age&#x27;  时执行 &#x27;height&#x27;: f4          // 当 d.sort = &#x27;height&#x27; 时执行})</pre>
 
-
-    
-</dd>
-
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="~merge"><span class="type-signature">&lt;inner> </span>merge(funcs)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        将多个选项函数返回的选项对象或选项对象合并为一个
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Argument</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>funcs</code></td>
-            
-
-            <td class="type">
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
 
     
 </dd>
@@ -1595,7 +1659,7 @@
             
                 <td class="default">
                 
-                    5
+                    15
                 
                 </td>
             
@@ -1978,155 +2042,6 @@
     
 </dd>
 
-        
-            
-<hr>
-<dt>
-    <h4 class="name" id="~where"><span class="type-signature">&lt;inner> </span>where(options)</h4>
-    
-    
-</dt>
-<dd>
-
-    
-    <div class="description">
-        where 子句简写支持
-    </div>
-    
-
-    
-
-    
-
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-        <th>Argument</th>
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-|
-
-<span class="param-type">array</span>
-|
-
-<span class="param-type">object</span>
-|
-
-<span class="param-type">function</span>
-
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-    
-
-    
-<dl class="details">
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-</dd>
-
         </dl>
     
 
@@ -2177,7 +2092,7 @@
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
-		on 2018-11-28T17:14:13+08:00
+		on 2019-04-23T13:37:31+08:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

@@ -5,7 +5,7 @@
 
 Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
 
-[API Documentation](https://yeshimei.github.io/Handle.js/)
+[API Documentation](https://yeshimei.github.io/ntbl-handle/)
 
 # 安装
 

@@ -96,12 +96,23 @@ function raw(data) {
   return this
 }
 
-
+/**
+ * 实例上的 before 钩子
+ * @memberOf Handle
+ * @instance
+ * @param f
+ */
 function before(f) {
   this._opts.before = f
   return this
 }
 
+/**
+ * 实例上的 after 钩子
+ * @memberOf Handle
+ * @instance
+ * @param f
+ */
 function after(f) {
   this._opts.after = f
   return this
