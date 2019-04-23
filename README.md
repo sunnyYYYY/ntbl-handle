@@ -1,10 +1,3 @@
-```
-^ Sunny
-) 18.08.10
-? F
-```
-
-[TOC]
 
 # Handle.js
 
@@ -17,13 +10,13 @@ Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口�
 # 安装
 
 ```bash
-npm i handle.js --save
+npm i @ntbl/handle --save
 ```
 
 # Usage
 
 ```javascript
-import Handle from 'handle.js'
+import Handle from '@ntbl/handle'
 // 导入 sequelize 模型
 import { Article } from '../models/db'
 
@@ -73,7 +66,7 @@ Handle 拥有大部分 sequelize 模型实例上的方法，分为两类。
 第一类，统称为**快捷方法**。调用后直接生成一个 async 函数（接口函数），可以直接挂载至路由，**无须编写一行代码。**。
 
 
-- **GET：** findOne, findAll, findById, findOrCreate, findAndCountAll, findAndCount, findCreateFind, count, max, min, sun
+- **GET：** findOne, findAll, findById, findOrCreate, findAndCountAll, findAndCount, findCreateFind, count, max, min, sum
 - **POST:** create, bulkCreate, update, destroy, increment, decrement
 
 ```js
@@ -82,7 +75,7 @@ router.get('/article/find', article.findAll())
 
 第二类，统称为**过程方法**，调用后仅返回数据，配合实例的 `process` 方法进一步处理。
 
-rawFindOne, rawFindAll, rawFindById, rawFindOrCreate, rawFindAndCountAll, rawFindAndCount, rawFindCreateFind, rawCount, rawMax, rawMin, rawSun，rawCreate, rawBulkCreate, rawUpdate, rawDestroy, rawIncrement, rawDecrement
+rawFindOne, rawFindAll, rawFindById, rawFindOrCreate, rawFindAndCountAll, rawFindAndCount, rawFindCreateFind, rawCount, rawMax, rawMin, rawSum，rawCreate, rawBulkCreate, rawUpdate, rawDestroy, rawIncrement, rawDecrement
 
 ```js
 const find = artcile.process(async function (d) {
@@ -277,9 +270,17 @@ full: db.article
 
 ```js
 article
-    // 接受一个用于查询的参数
+    // 接受一个查询参数
     // 默认为 name
     .fuzzyQuery('title')
+    .findAll()
+```
+
+
+```js
+article
+    // 可选的
+    .fuzzyQuery('!title')
     .findAll()
 ```
 
@@ -419,9 +420,9 @@ function nb () {
   return merge(
     where('uid'),
     where('!id'),
-    fuzzyQuery('title'),
-    pagination(10),
+    fuzzyQuery('!title'),
     order(['createdAt', 'DESC']),
+    pagination(10),
   )
 }
 
@@ -435,11 +436,41 @@ article
 
 ## 自定义
 
+你也可以扩展自定义的工具方法，你需要在**实例化之前**，添加你的自定义工具放在在 `Handle.Scope` 中即可
 
-
+```js
+Handle.Scope.myUtil = function (d) {
+   // 返回一个完整的选项对象
+    return {
+        where: {
+            uid: d.uid
+        }
+        // 其他选项
+    }
+}
 ```
 
+通过提供一个偏函数指定默认值
+
+```js
+Handle.Scope.myUtil = function (defaultValue) {
+    return function (data) {
+        return {
+          
+        }
+    }
+ 
+}
 ```
+
+然后你就可以在全局使用自定义的工具函数 `myUtil`。
+
+```js
+article
+    .myUtil()
+    .findAll()
+```
+
 
 # Process
 
@@ -507,7 +538,7 @@ articleStar.transaction(async function (d) {
 # 钩子
 
 `Handle` 在选项对象里提供了三个全局钩子 `before` 、`after`， `data`。
-
+每个快捷方法都会执行这些钩子，而过程方法则会忽略这些钩子，`process` 会在调用回调前执行 `before` 调用回调后执行 `after` 和 `data`。
 
 ```javascript
 new Handle(model, {
@@ -526,7 +557,44 @@ new Handle(model, {
 })
 ```
 
-如果你设置了全局钩子，每个快捷方法都会执行这些钩子，而过程方法则会忽略这些钩子，`process` 会在调用回调前执行 `before` 调用回调后执行 `after` 和 `data`。
+
+
+另外，每个实例方法上都有 `before` 和 `after` 函数，可以注册仅在实例上执行的钩子，帮助我们完成一些有用的处理。
+
+我们可以通过 `before` 钩子校验前端发过来的数据。
+
+```js
+article
+    .before(function (data) {
+      const {title} = data
+      if (!title) {
+        // 直接抛出异常
+        // 这将会在全局的 data 钩子中被捕获到
+        throw new Error('文章标题不能为空')
+      }
+    
+      if (title.length < 1 || title.length > 25) {
+        throw new Error('文章标题不小于 2 个字符且不大于 25 个字符')
+      }
+      return data
+    })
+    .create()
+```
+
+也可以通过 `after` 钩子过滤数据。
+
+```js
+article
+    .after(function (data) {
+      // 仅返回文章的数量
+      return data.length
+    })
+    .where('uid')
+    .findAll()
+```
+
+请注意，实例的 `before` 钩子先于全局 `before` 钩子执行，而实例的 `after` 钩子**晚于**全局 `after` 钩子执行
+
 
 # 原生数据
 
