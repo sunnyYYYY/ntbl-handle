@@ -51,8 +51,9 @@
     "chalk": "^2.4.1",
     "escape-string-regexp": "^1.0.5",
     "glob": "^7.1.3",
-    "merge": "^1.2.0",
-    "mockjs": "^1.0.1-beta3"
+    "merge": "^1.2.1",
+    "mockjs": "^1.0.1-beta3",
+    "sequelize": "^5.7.4"
   },
   "config": {
     "commitizen": {

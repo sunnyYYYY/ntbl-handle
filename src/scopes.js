@@ -45,20 +45,20 @@ function fuzzyQueryFileid (field) {
  * 模糊查询
  * @param field
  */
-let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[fuzzyQueryFileid(field)]}%`])
+let fuzzyQuery = (field = 'name') => where([`${field} #like`, d => `%${d[fuzzyQueryFileid(field)]}%`])
 
 
 /**
  * 左模糊查询
  * @param field
  */
-let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[fuzzyQueryFileid(field)]}`])
+let fuzzyQueryLeft = (field = 'name') => where([`${field} #like`, d => `%${d[fuzzyQueryFileid(field)]}`])
 
 /**
  * 右模糊查询
  * @param field
  */
-let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[fuzzyQueryFileid(field)]}%`])
+let fuzzyQueryRight = (field = 'name') => where([`${field} #like`, d => `${d[fuzzyQueryFileid(field)]}%`])
 
 
 /**

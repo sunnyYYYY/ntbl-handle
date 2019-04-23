@@ -4,7 +4,8 @@ import chalk from 'chalk'
 import escapeStringRegexp from 'escape-string-regexp'
 import Handle from './index'
 import glob from 'glob'
-
+import Sequelize from 'sequelize'
+const Op = Sequelize.Op
 
 const PATTERN_IDENTIFIER = /[A-Za-z_][A-Za-z0-9_]*/
 
@@ -120,7 +121,25 @@ export let mixinScope = (d, defaultScope, scopes) => {
     else res = scope(d)
     return res
   })
-  return merge.recursive(true, ...result)
+  const opts = merge.recursive(true, ...result)
+  dealOp(opts.where)
+  return opts
+
+}
+
+
+function dealOp(where = {}) {
+  for (let key in where) {
+    const value = where[key]
+    if (key.slice(1) in Op) {
+      where[Op[key.slice(1)]] = value
+      delete where[key]
+    }
+
+    if (isObj(value)) dealOp(value)
+  }
+
+
 }
 
 /**
@@ -211,7 +230,8 @@ function parseSign (a, b, source, target) {
   // 别名
   if (typeof b === 'string' && /^@/.test(b)) {
     optionKey = b.match(PATTERN_IDENTIFIER)[0]
-    value = target[optionKey]
+    // [HACK] sequelize v5 中会对属性的 undefined 抛出异常
+    value = target[optionKey] || new Date
   }
   
 
@@ -219,44 +239,44 @@ function parseSign (a, b, source, target) {
   if (/^!/.test(a) && target[optionKey] == null) return
 
   // Op
-
   let opTag = {
-    '>': 'gt',
-    '>=': 'gte',
-    '<': 'lt',
-    '<=': 'lte',
-    '!=': 'ne',
-    '=': 'and',
-    '$and': 'and',
-    '$or': 'or',
-    '$gt': 'gt',
-    '$gte': 'gte',
-    '$lt': 'lt',
-    '$lte': 'lte',
-    '$ne': 'ne',
-    '$eq': 'eq',
-    '$not': 'not',
-    '$between': 'between',
-    '$notBetween': 'notBetween',
-    '$in': 'in',
-    '$notIn': 'notIn',
-    '$like': 'like',
-    '$notLike': 'notLike',
-    '$iLike': 'iLike',
-    '$regexp': 'regexp',
-    '$iRegexp': 'iRegexp',
-    '$notIRegexp': 'notIRegexp',
-    '$overlap': 'overlap',
-    '$contains': 'contains',
-    '$contained': 'contained',
-    '$any': 'any',
-    '$col': 'col',
+    '>': '#gt',
+    '>=': '#gte',
+    '<': '#lt',
+    '<=': '#lte',
+    '!=': '#ne',
+    '=': '#and',
+    '#and': '#and',
+    '#or': '#or',
+    '#gt': '#gt',
+    '#gte': '#gte',
+    '#lt': '#lt',
+    '#lte': '#lte',
+    '#ne': '#ne',
+    '#eq': '#eq',
+    '#not': '#not',
+    '#between': '#between',
+    '#notBetween': '#notBetween',
+    '#in': '#in',
+    '#notIn': '#notIn',
+    '#like': '#like',
+    '#notLike': '#notLike',
+    '#iLike': '#iLike',
+    '#regexp': '#regexp',
+    '#iRegexp': '#iRegexp',
+    '#notIRegexp': '#notIRegexp',
+    '#overlap': '#overlap',
+    '#contains': '#contains',
+    '#contained': '#contained',
+    '#any': '#any',
+    '#col': '#col',
   }
+
   let argMatch = a.match(new RegExp('(' + Object.keys(opTag).map(arg => escapeStringRegexp(arg)).join('|') +
     ')'))
-  let arg = opTag[argMatch ? argMatch[0] : '=']
 
-  if (arg === 'and') {
+  let arg = opTag[argMatch ? argMatch[0] : '='];
+  if (arg === '#and') {
     if (!source[key]) source[key] = []
     source[key] = value
   }

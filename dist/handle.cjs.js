@@ -9,8 +9,10 @@ var path = _interopDefault(require('path'));
 var chalk = _interopDefault(require('chalk'));
 var escapeStringRegexp = _interopDefault(require('escape-string-regexp'));
 var glob = _interopDefault(require('glob'));
+var Sequelize = _interopDefault(require('sequelize'));
 require('mockjs');
 
+const Op = Sequelize.Op;
 const PATTERN_IDENTIFIER = /[A-Za-z_][A-Za-z0-9_]*/;
 let requestMethods = ['get', 'head', 'put', 'delete', 'post', 'options'];
 let isObj = value => Object.prototype.toString.call(value) === '[object Object]';
@@ -107,8 +109,23 @@ let mixinScope = (d, defaultScope, scopes) => {
     if (typeof res === 'function') res = scope()(d);else res = scope(d);
     return res;
   });
-  return merge.recursive(true, ...result);
+  const opts = merge.recursive(true, ...result);
+  dealOp(opts.where);
+  return opts;
 };
+
+function dealOp(where = {}) {
+  for (let key in where) {
+    const value = where[key];
+
+    if (key.slice(1) in Op) {
+      where[Op[key.slice(1)]] = value;
+      delete where[key];
+    }
+
+    if (isObj(value)) dealOp(value);
+  }
+}
 /**
  * 首字母大写
  *
@@ -116,6 +133,7 @@ let mixinScope = (d, defaultScope, scopes) => {
  * @returns {string}
  * @private
  */
+
 
 let initialCap = str => str[0].toUpperCase() + str.substring(1);
 /**
@@ -174,49 +192,50 @@ function parseSign(a, b, source, target) {
   key = key && key[0]; // 别名
 
   if (typeof b === 'string' && /^@/.test(b)) {
-    optionKey = b.match(PATTERN_IDENTIFIER)[0];
-    value = target[optionKey];
+    optionKey = b.match(PATTERN_IDENTIFIER)[0]; // sequelize v5 中会对属性的
+
+    value = target[optionKey] || new Date();
   } // 可选项
 
 
   if (/^!/.test(a) && target[optionKey] == null) return; // Op
 
   let opTag = {
-    '>': 'gt',
-    '>=': 'gte',
-    '<': 'lt',
-    '<=': 'lte',
-    '!=': 'ne',
-    '=': 'and',
-    '$and': 'and',
-    '$or': 'or',
-    '$gt': 'gt',
-    '$gte': 'gte',
-    '$lt': 'lt',
-    '$lte': 'lte',
-    '$ne': 'ne',
-    '$eq': 'eq',
-    '$not': 'not',
-    '$between': 'between',
-    '$notBetween': 'notBetween',
-    '$in': 'in',
-    '$notIn': 'notIn',
-    '$like': 'like',
-    '$notLike': 'notLike',
-    '$iLike': 'iLike',
-    '$regexp': 'regexp',
-    '$iRegexp': 'iRegexp',
-    '$notIRegexp': 'notIRegexp',
-    '$overlap': 'overlap',
-    '$contains': 'contains',
-    '$contained': 'contained',
-    '$any': 'any',
-    '$col': 'col'
+    '>': '#gt',
+    '>=': '#gte',
+    '<': '#lt',
+    '<=': '#lte',
+    '!=': '#ne',
+    '=': '#and',
+    '#and': '#and',
+    '#or': '#or',
+    '#gt': '#gt',
+    '#gte': '#gte',
+    '#lt': '#lt',
+    '#lte': '#lte',
+    '#ne': '#ne',
+    '#eq': '#eq',
+    '#not': '#not',
+    '#between': '#between',
+    '#notBetween': '#notBetween',
+    '#in': '#in',
+    '#notIn': '#notIn',
+    '#like': '#like',
+    '#notLike': '#notLike',
+    '#iLike': '#iLike',
+    '#regexp': '#regexp',
+    '#iRegexp': '#iRegexp',
+    '#notIRegexp': '#notIRegexp',
+    '#overlap': '#overlap',
+    '#contains': '#contains',
+    '#contained': '#contained',
+    '#any': '#any',
+    '#col': '#col'
   };
   let argMatch = a.match(new RegExp('(' + Object.keys(opTag).map(arg => escapeStringRegexp(arg)).join('|') + ')'));
   let arg = opTag[argMatch ? argMatch[0] : '='];
 
-  if (arg === 'and') {
+  if (arg === '#and') {
     if (!source[key]) source[key] = [];
     source[key] = value;
   } else {
@@ -262,21 +281,21 @@ function fuzzyQueryFileid(field) {
  */
 
 
-let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[fuzzyQueryFileid(field)]}%`]);
+let fuzzyQuery = (field = 'name') => where([`${field} #like`, d => `%${d[fuzzyQueryFileid(field)]}%`]);
 /**
  * 左模糊查询
  * @param field
  */
 
 
-let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[fuzzyQueryFileid(field)]}`]);
+let fuzzyQueryLeft = (field = 'name') => where([`${field} #like`, d => `%${d[fuzzyQueryFileid(field)]}`]);
 /**
  * 右模糊查询
  * @param field
  */
 
 
-let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[fuzzyQueryFileid(field)]}%`]);
+let fuzzyQueryRight = (field = 'name') => where([`${field} #like`, d => `${d[fuzzyQueryFileid(field)]}%`]);
 /**
  * 添加关联
  * @param args
@@ -467,11 +486,25 @@ function raw(data) {
   this._opts.rawData = data;
   return this;
 }
+/**
+ * 实例上的 before 钩子
+ * @memberOf Handle
+ * @instance
+ * @param f
+ */
+
 
 function before(f) {
   this._opts.before = f;
   return this;
 }
+/**
+ * 实例上的 after 钩子
+ * @memberOf Handle
+ * @instance
+ * @param f
+ */
+
 
 function after(f) {
   this._opts.after = f;

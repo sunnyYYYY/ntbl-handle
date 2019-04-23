@@ -7,6 +7,7 @@ Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口�
 
 [API Documentation](https://yeshimei.github.io/ntbl-handle/)
 
+
 # 安装
 
 ```bash
@@ -66,7 +67,7 @@ Handle 拥有大部分 sequelize 模型实例上的方法，分为两类。
 第一类，统称为**快捷方法**。调用后直接生成一个 async 函数（接口函数），可以直接挂载至路由，**无须编写一行代码。**。
 
 
-- **GET：** findOne, findAll, findById, findOrCreate, findAndCountAll, findAndCount, findCreateFind, count, max, min, sum
+- **GET：** findOne, findAll, findById, findOrCreate, findAndCountAll, findCreateFind, count, max, min, sum
 - **POST:** create, bulkCreate, update, destroy, increment, decrement
 
 ```js
@@ -75,14 +76,21 @@ router.get('/article/find', article.findAll())
 
 第二类，统称为**过程方法**，调用后仅返回数据，配合实例的 `process` 方法进一步处理。
 
-rawFindOne, rawFindAll, rawFindById, rawFindOrCreate, rawFindAndCountAll, rawFindAndCount, rawFindCreateFind, rawCount, rawMax, rawMin, rawSum，rawCreate, rawBulkCreate, rawUpdate, rawDestroy, rawIncrement, rawDecrement
+rawFindOne, rawFindAll, rawFindById, rawFindOrCreate, rawFindAndCountAll, rawFindCreateFind, rawCount, rawMax, rawMin, rawSum，rawCreate, rawBulkCreate, rawUpdate, rawDestroy, rawIncrement, rawDecrement
 
 ```js
 const find = artcile.process(async function (d) {
+    // 数据校验
+    // 略去
+    
     // 查询用户
-    const userData = await user.rawFindOne(['username', 'password'])
+    const userData = await user
+        .where('username', 'password')
+        .rawFindOne()
     // 查询当前用户的文章
-    const result = await this.rawFindAll([['id', userData.id]])
+    const result = await this
+        .where(['id', userData.id])
+        .rawFindAll()
     // 仅返回被推荐的文章
     return result.filter(e => e.type === 'recommend')
 })
@@ -196,7 +204,7 @@ article
 ```js
 article
     // 一个模糊查询
-    .where(['title $like', d => `%${d.title}%`])
+    .where(['title #like', d => `%${d.title}%`])
     .findAll()
 ```
 
@@ -210,30 +218,30 @@ let opTag = {
     '<=': 'lte',
     '!=': 'ne',
     '=': 'and',
-    '$and': 'and',
-    '$or': 'or',
-    '$gt': 'gt',
-    '$gte': 'gte',
-    '$lt': 'lt',
-    '$lte': 'lte',
-    '$ne': 'ne',
-    '$eq': 'eq',
-    '$not': 'not',
-    '$between': 'between',
-    '$notBetween': 'notBetween',
-    '$in': 'in',
-    '$notIn': 'notIn',
-    '$like': 'like',
-    '$notLike': 'notLike',
-    '$iLike': 'iLike',
-    '$regexp': 'regexp',
-    '$iRegexp': 'iRegexp',
-    '$notIRegexp': 'notIRegexp',
-    '$overlap': 'overlap',
-    '$contains': 'contains',
-    '$contained': 'contained',
-    '$any': 'any',
-    '$col': 'col',
+    '#and': 'and',
+    '#or': 'or',
+    '#gt': 'gt',
+    '#gte': 'gte',
+    '#lt': 'lt',
+    '#lte': 'lte',
+    '#ne': 'ne',
+    '#eq': 'eq',
+    '#not': 'not',
+    '#between': 'between',
+    '#notBetween': 'notBetween',
+    '#in': 'in',
+    '#notIn': 'notIn',
+    '#like': 'like',
+    '#notLike': 'notLike',
+    '#iLike': 'iLike',
+    '#regexp': 'regexp',
+    '#iRegexp': 'iRegexp',
+    '#notIRegexp': 'notIRegexp',
+    '#overlap': 'overlap',
+    '#contains': 'contains',
+    '#contained': 'contained',
+    '#any': 'any',
+    '#col': 'col',
   }
 ```
 
@@ -260,7 +268,7 @@ let opTag = {
 full: db.article
     .where('uid')
     .where('!id')
-    .where(['!title $like', d => `%${d.title}%`])
+    .where(['!title #like', d => `%${d.title}%`])
     .findAll()
 ```
 
@@ -509,10 +517,17 @@ articleStar.process(async function (d) {
 
 ```js
 const find = artcile.process(async function (d) {
+    // 数据校验
+    // 略去
+    
     // 查询用户
-    const userData = await user.rawFindOne(['username', 'password'])
+    const userData = await user
+        .where('username', 'password')
+        .rawFindOne()
     // 查询当前用户的文章
-    const result = await this.rawFindAll([['id', userData.id]])
+    const result = await this
+        .where(['id', userData.id])
+        .rawFindAll()
     // 仅返回被推荐的文章
     return result.filter(e => e.type === 'recommend')
 })
@@ -609,34 +624,6 @@ article
 
 但是，你需要了解，Request Data 仍然会用于各种场景下，比如 Scope 和 where 工具函数的解析，只是在最后合成 sequelize 方法的参数时，Request Data 被替换成了 原生数据，也就意味着，在钩子或者其他地方修改 Request Data 不会应用到数据库访问中。通过这一点，你可以使用类似 mock 的库批量向数据库添加数据。（并在未来可能会支持 mocK 的数据模拟）
 
-# 差异性的问题
-
-Handle 做为中间库，不会更改 sequelize 原生用法，它只关注一件事，就是让你用最少的代码写出最复杂的接口并让代码具有良好的可读性。另外，从代码层面上引导你编写可复用的代码。
-
-但是，由于一些轮子依赖，在某些特定情况会产生一些约束，这些约束都会在这里指出，并在后续版本中解决，了解它们，可以更好的帮助你使用 Handle。
-
-1. **很遗憾，你无法使用 Sequelize.Op**，但是可以使用字符串标识替代（但是在 v5 中会抛出一个废弃警告），原因是 Op 返回的是一个 Symbol 类型，作为对象的 key 使用时 Handle 所依赖的 `merge` 无法深度合并 Symbol，导致数据丢失。
-
-```javascript
-// 会丢失
-article
-  .scope({
-      where: {
-        [Op.lt]: 2
-      }
-  })
-  .findAll()
-
-// 更改为字符串语法
-
-article
-  .scope({
-      where: {
-        'it': 2
-      }
-  })
-  .findAll()
-```
 
 ## 一句话
 

@@ -42,12 +42,12 @@ const utils = {
   // 查询 id 大于指定数值的文章数据
   gt: db.article.where('id >').findAll(),
   // 模糊查询
-  like: db.article.where(['title $like', d => `%${d.title}%`]).findAll(),
+  like: db.article.where(['title #like', d => `%${d.title}%`]).findAll(),
   // 一个复杂的接口参数逻辑
   full: db.article
     .where('uid')
     .where('!id')
-    .where(['!title $like', d => `%${d.title}%`])
+    .where(['!title #like', d => `%${d.title}%`])
     .findAll(),
 
   // 模糊查询
