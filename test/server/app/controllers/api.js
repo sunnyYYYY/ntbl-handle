@@ -1,5 +1,20 @@
 import db from '../models/test'
 
+// 引入独立的函数版本 Scopes 对象
+import Handle from  '../../../../dist/handle.es'
+const {where, pagination, fuzzyQuery, include, order, it, merge} = Handle.Scopes
+
+function nb () {
+  // 使用 merge 函数合并多个工具函数
+  return merge(
+    where('uid'),
+    where('!id'),
+    fuzzyQuery('!title'),
+    pagination(10),
+    order(['createdAt', 'DESC']),
+  )
+}
+
 
 
 
@@ -46,19 +61,70 @@ const utils = {
 
   include: db.article
     .where('id')
-    .include({model: db.comment})
+    .include(db._models.comment)
     .findAll(),
 
   remove: db.article
     .where('id')
     .remove('hot')
     .update(),
+
   set: db.article
     .where('id')
     .set('hot', 10)
     .update(),
+
+  it: db.article
+    .it('comment', include(db._models.comment))
+    .findAll(),
+
+  not: db.article
+    .not('comment', include(db._models.comment))
+    .findAll(),
+
+  // TODO more 测试
+  more: db.article
+    .more('comment', {
+
+    })
+    .findAll(),
+  scope: db.article.scope(nb).findAll(),
 }
 
+
+// 快捷方法
+const easy = {
+  findOne: db.article.where('id').findOne(),
+  findAll: db.article.where('uid').findAll(),
+  findOrCreate: db.article.where('id').findOrCreate(),
+  findAndCountAll: db.article.where('uid').findAndCountAll(),
+  findAndCount: db.article.where('uid').findAndCount(),
+  findCreateFind: db.article.where('id').findCreateFind(),
+  count: db.article.raw('hot').where('uid').count(),
+  max: db.article.raw('hot').where('uid').max(),
+  min: db.article.raw('hot').where('uid').min(),
+  sum: db.article.raw('hot').where('uid').sum(),
+}
+
+// 过程方法
+const process = {
+  process: db.article.process(async function (d) {
+    const {count = 15, page = 0, uid} = d
+    return await this.rawFindAll({
+      include: [
+        {
+          // 关联查询文章数据
+          model: db._models.comment,
+        }
+      ],
+      // 通过 uid 查询
+      where: { uid },
+      // 分页
+      limit: count,
+      offset: page * count
+    })
+  }),
+}
 
 
 
@@ -66,24 +132,29 @@ const utils = {
 
 
 const other = {
+  before: db.article
+    .before(function (data) {
+      const {title} = data
+      if (!title) {
+        throw new Error('文章标题不能为空')
+      }
 
-  // // 实例的选项对象
-  // raw: db.article.raw('hot').increment('id'),
-  // method: db.article.method('post').findOne('id'),
-  //
-  // /* 过程 */
-  // process: db.article.process(async function (d) {
-  //   return await this.rawFindOne('id')
-  // }),
-  // processMethodPost: db.article.process('post', async function (d) {
-  //   return await this.rawFindOne('id')
-  // }),
-  //
-  // processRaw: db.article.process(async function (d) {
-  //   return await this.raw('hot').rawIncrement('id')
-  // }),
+      if (title.length < 1 || title.length > 25) {
+        throw new Error('文章标题不小于 2 个字符且不大于 25 个字符')
+      }
+      return data
+    })
+    .create(),
+
+  after: db.article
+    .after(function (data) {
+      // 仅返回文章的数量
+      return data.length
+    })
+    .where('uid')
+    .findAll()
 }
 
 
 
-export default Object.assign(other, utils)
+export default Object.assign(other, utils, easy, process)

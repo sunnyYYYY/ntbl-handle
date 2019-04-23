@@ -158,7 +158,7 @@ let tailspin = (o, path$$1, defaultValue) => {
  */
 
 let proxyNames = {
-  get: ['findOne', 'findAll', 'findById', 'findOrCreate', 'findAndCountAll', 'findAndCount', 'findCreateFind', 'count', 'max', 'min', 'sun'],
+  get: ['findOne', 'findAll', 'findOrCreate', 'findAndCountAll', 'findAndCount', 'findCreateFind', 'count', 'max', 'min', 'sum'],
   post: ['create', 'bulkCreate', 'update', 'destroy', 'increment', 'decrement']
 };
 
@@ -248,34 +248,38 @@ let pagination = (defaultCount = 15, defaultPage = 0) => {
     };
   };
 };
+
+function fuzzyQueryFileid(field) {
+  return field[0] === '!' ? field.slice(1) : field;
+}
 /**
  * 模糊查询
  * @param field
  */
 
 
-let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[field]}%`]);
+let fuzzyQuery = (field = 'name') => where([`${field} $like`, d => `%${d[fuzzyQueryFileid(field)]}%`]);
 /**
  * 左模糊查询
  * @param field
  */
 
 
-let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[field]}`]);
+let fuzzyQueryLeft = (field = 'name') => where([`${field} $like`, d => `%${d[fuzzyQueryFileid(field)]}`]);
 /**
  * 右模糊查询
  * @param field
  */
 
 
-let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[field]}%`]);
+let fuzzyQueryRight = (field = 'name') => where([`${field} $like`, d => `${d[fuzzyQueryFileid(field)]}%`]);
 /**
  * 添加关联
  * @param args
  */
 
 
-let include = args => d => ({
+let include = (...args) => d => ({
   include: args
 });
 /**
@@ -414,6 +418,8 @@ Handle.prototype = {
   rawScope,
   process: process$1,
   transaction,
+  before,
+  after,
   __internal,
   __process,
   __reset,
@@ -454,6 +460,16 @@ function method(name = 'get') {
 
 function raw(data) {
   this._opts.rawData = data;
+  return this;
+}
+
+function before(f) {
+  this._opts.before = f;
+  return this;
+}
+
+function after(f) {
+  this._opts.after = f;
   return this;
 }
 /**
@@ -561,7 +577,9 @@ function __internal(name, ...options) {
   let {
     method,
     rawData,
-    scopes
+    scopes,
+    before,
+    after
   } = this.__reset();
 
   return async (ctx, next) => {
@@ -571,6 +589,7 @@ function __internal(name, ...options) {
     let data = getRequestData(requestMethod, ctx);
 
     try {
+      typeof before === 'function' && (data = before(data, ctx, next));
       data = this.__callHook('before', data, ctx, next); // 混合作用域
 
       let opts = mixinScope(data, defaultScopes, scopes); // 原生数据
@@ -584,6 +603,7 @@ function __internal(name, ...options) {
 
       let result = await this.model[name](...opts);
       result = this.__callHook('after', result, ctx, next);
+      typeof after === 'function' && (result = after(result, ctx, next));
       return ctx.body = this.__callHook('data', null, result, ctx, next);
     } catch (err) {
       return ctx.body = this.__callHook('data', err, ctx, next);

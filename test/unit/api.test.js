@@ -103,7 +103,6 @@ describe('工具函数', () => {
 
   it('关联', async () => {
     const { body } = await get('/include', {id: 2})
-    console.log(body.length)
     expect(body[0].comments.length).not.null
   })
 
@@ -122,56 +121,118 @@ describe('工具函数', () => {
     expect(r2.body[0].hot).equal(10)
   })
 
-})
+  it ('条件分支', async () => {
+    const r1 = await get('/it', {id: 2})
+    expect(r1.body[0].comments).undefined
+    const r2 = await get('/it', {id: 2, comment: true})
+    expect(r2.body[0].comments.length).not.null
+  })
 
+  it ('反向条件分支', async () => {
+    const r1 = await get('/not', {id: 2})
+    expect(r1.body[0].comments.length).not.null
+    const r2 = await get('/not', {id: 2, comment: true})
+    expect(r2.body[0].comments).undefined
+  })
 
+  it ('多条件分支', async () => {
+    const r1 = await get('/more', {id: 2})
+    expect(body[0].comments).not.null
+  })
 
+  it ('scope', async () => {
+    const r1 = await get('/scope')
+    expect(r1.body.length).equal(0)
 
+    const r2 = await get('/scope', {uid: 2})
+    expect(r2.body.length).above(0)
 
-
-describe('Scopes Utils', () => {
-  it('fuzzyQuery# 模糊查询', async () => {
-    const { body } = await get('/scopes/fuzzyQuery', {title: '的'})
-    expect(body.length).equal(1)
+    const r3 = await get('/scope', {id: 9, uid: 3, title: '她' })
+    expect(r3.body.length).equal(1)
   })
 })
 
-describe('实例方法选项', () => {
-  it('rwa# 原生数据', async () => {
-    const data = {
-      id: 7
-    }
-    const oldHot = (await get('/findOne', data)).body.hot
-    await get('/instance/options/raw', data)
-    const newHot = (await get('/findOne', data)).body.hot
-    expect(oldHot + 1).equal(newHot)
+
+describe('快捷方法', () => {
+  it('findOne', async () => {
+    const { body } = await get('/findOne', {id: 2})
+    expect(body).exist
   })
 
-  it('method# 设置请求方法', async () => {
-    const { body } = await post('/instance/options/method', {id: 7})
-    expect(body.id).equal(7)
+  it('findAll', async () => {
+    const { body } = await get('/findAll', {uid: 3})
+    expect(body.length).above(0)
+  })
+
+
+  it('findOrCreate', async () => {
+    const { body } = await get('/findOrCreate', {id: 3, title: '我的祖国'})
+    expect(body.length).above(0)
+  })
+
+  it('findAndCountAll', async () => {
+    const { body } = await get('/findAndCountAll', {uid: 3, title: '我的祖国'})
+    expect(body.count).above(0)
+  })
+
+  it('findAndCount', async () => {
+    const { body } = await get('/findAndCount', {id: 3})
+    expect(body.count).above(0)
+  })
+
+  it('findCreateFind', async () => {
+    const { body } = await get('/findCreateFind', {id: 3, title: '我的祖国'})
+    expect(body[0]).exist
+  })
+
+  it('findAndCount', async () => {
+    const { body } = await get('/findAndCount', {id: 3})
+    expect(body.count).above(0)
+  })
+
+  it('count', async () => {
+    const { body } = await get('/count', {uid: 2})
+    expect(body).above(0)
+  })
+
+  it('max', async () => {
+    const { body } = await get('/max', {uid: 2})
+    expect(body).above(0)
+  })
+
+  it('min', async () => {
+    const { body } = await get('/min', {uid: 2})
+    expect(body).equal(0)
+  })
+
+  it('sum', async () => {
+    const { body } = await get('/sum', {uid: 2})
+    expect(body).above(0)
   })
 })
 
+describe('过程方法', () => {
 
-describe('Process', () => {
   it('process', async () => {
-    const { body } = await get('/process', {id: 7})
-    expect(body.id).equal(7)
+    const { body } = await get('/process', {uid: 2})
+    expect(body.length).above(0)
   })
+})
 
-  it('post# 提供第一个参数', async () => {
-    const { body } = await post('/process/method/post', {id: 7})
-    expect(body.id).equal(7)
-  })
+describe('其他', () => {
+  it('提供 before 校验数据', async () => {
+    const r1 = await post('/before', {title: '我的祖国', uid: 2})
+    expect(r1.body.title).equal('我的祖国')
 
-  it('raw# 原生数据', async () => {
-    const data = {
-      id: 7
+    try {
+      await post('/before', {uid: 2})
+    } catch (e) {
+      expect(e.message).equal('文章标题不能为空')
     }
-    const oldHot = (await get('/findOne', data)).body.hot
-    await get('/process/raw', data)
-    const newHot = (await get('/findOne', data)).body.hot
-    expect(oldHot + 1).equal(newHot)
+  })
+
+  it('提供 after 过滤数据', async () => {
+    const { body } = await get('/after', {uid: 2})
+    expect(body).above(0)
   })
 })
