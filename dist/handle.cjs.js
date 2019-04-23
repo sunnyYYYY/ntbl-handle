@@ -423,6 +423,7 @@ Handle.prototype = {
   process: process$1,
   transaction,
   before,
+  version: '1.0.0',
   after,
   __internal,
   __process,

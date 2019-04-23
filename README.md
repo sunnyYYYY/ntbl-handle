@@ -8,7 +8,7 @@
 
 # Handle.js
 
-[![GitHub](https://img.shields.io/badge/GitHub-yeshimei-green.svg)](https://github.com/yeshimei/Handle.js) [![npm](https://img.shields.io/badge/npm-v0.0.3-blue.svg)](https://www.npmjs.com/package/handle.js) [![MIT](https://img.shields.io/npm/l/express.svg)](https://github.com/yeshimei/Handle.js)
+[![GitHub](https://img.shields.io/badge/GitHub-yeshimei-green.svg)](https://github.com/yeshimei/ntbl-handle.git) [![npm](https://img.shields.io/npm/v/@ntbl/handle.svg)](https://www.npmjs.com/package/handle.js) [![MIT](https://img.shields.io/npm/l/express.svg)](https://github.com/yeshimei/ntbl-handle.git)
 
 Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
 

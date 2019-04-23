@@ -52,6 +52,7 @@ Handle.prototype = {
   process,
   transaction,
   before,
+  version: '__VERSION__',
   after,
   __internal,
   __process,

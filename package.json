@@ -1,6 +1,6 @@
 {
   "name": "@ntbl/handle",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "一个基于 koa 和 sequelize 的中间库, 让你只专注于接口逻辑。",
   "main": "dist/handle.cjs.js",
   "module": "dist/handle.es.js",
@@ -14,11 +14,11 @@
     "sequelize"
   ],
   "bugs": {
-    "url": "https://github.com/yeshimei/Handle.js/issues"
+    "url": "https://github.com/yeshimei/ntbl-handle/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yeshimei/Handle.js.git"
+    "url": "git+https://github.com/yeshimei/ntbl-handle.git"
   },
   "license": "MIT",
   "scripts": {
