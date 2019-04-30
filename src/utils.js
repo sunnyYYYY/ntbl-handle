@@ -122,7 +122,8 @@ export let mixinScope = (d, defaultScope, scopes) => {
     return res
   })
   const opts = merge(...result)
-  dealOp(opts.where)
+  console.log(opts)
+  // dealOp(opts.where)
   return opts
 
 }
@@ -240,49 +241,49 @@ function parseSign (a, b, source, target) {
 
   // Op
   let opTag = {
-    '>': '#gt',
-    '>=': '#gte',
-    '<': '#lt',
-    '<=': '#lte',
-    '!=': '#ne',
-    '=': '#and',
-    '#and': '#and',
-    '#or': '#or',
-    '#gt': '#gt',
-    '#gte': '#gte',
-    '#lt': '#lt',
-    '#lte': '#lte',
-    '#ne': '#ne',
-    '#eq': '#eq',
-    '#not': '#not',
-    '#between': '#between',
-    '#notBetween': '#notBetween',
-    '#in': '#in',
-    '#notIn': '#notIn',
-    '#like': '#like',
-    '#notLike': '#notLike',
-    '#iLike': '#iLike',
-    '#regexp': '#regexp',
-    '#iRegexp': '#iRegexp',
-    '#notIRegexp': '#notIRegexp',
-    '#overlap': '#overlap',
-    '#contains': '#contains',
-    '#contained': '#contained',
-    '#any': '#any',
-    '#col': '#col',
+    '>': 'gt',
+    '>=': 'gte',
+    '<': 'lt',
+    '<=': 'lte',
+    '!=': 'ne',
+    '=': 'and',
+    '#and': 'and',
+    '#or': 'or',
+    '#gt': 'gt',
+    '#gte': 'gte',
+    '#lt': 'lt',
+    '#lte': 'lte',
+    '#ne': 'ne',
+    '#eq': 'eq',
+    '#not': 'not',
+    '#between': 'between',
+    '#notBetween': 'notBetween',
+    '#in': 'in',
+    '#notIn': 'notIn',
+    '#like': 'like',
+    '#notLike': 'notLike',
+    '#iLike': 'iLike',
+    '#regexp': 'regexp',
+    '#iRegexp': 'iRegexp',
+    '#notIRegexp': 'notIRegexp',
+    '#overlap': 'overlap',
+    '#contains': 'contains',
+    '#contained': 'contained',
+    '#any': 'any',
+    '#col': 'col',
   }
 
   let argMatch = a.match(new RegExp('(' + Object.keys(opTag).map(arg => escapeStringRegexp(arg)).join('|') +
     ')'))
 
-  let arg = opTag[argMatch ? argMatch[0] : '='];
-  if (arg === '#and') {
+  let arg = opTag[argMatch ? argMatch[0] : '=']
+  if (arg === 'and') {
     if (!source[key]) source[key] = []
     source[key] = value
   }
   else {
     if (!source[key]) source[key] = {}
-    source[key][arg] = value
+    source[key][Op[arg]] = value
   }
 }
 

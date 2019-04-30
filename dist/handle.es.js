@@ -1,6 +1,6 @@
 // * Released under the MIT License.
 
-import merge from 'merge';
+import merge from 'assign-deep';
 import path from 'path';
 import chalk from 'chalk';
 import escapeStringRegexp from 'escape-string-regexp';
@@ -105,23 +105,11 @@ let mixinScope = (d, defaultScope, scopes) => {
     if (typeof res === 'function') res = scope()(d);else res = scope(d);
     return res;
   });
-  const opts = merge.recursive(true, ...result);
-  dealOp(opts.where);
+  const opts = merge(...result);
+  console.log(opts); // dealOp(opts.where)
+
   return opts;
 };
-
-function dealOp(where = {}) {
-  for (let key in where) {
-    const value = where[key];
-
-    if (key.slice(1) in Op) {
-      where[Op[key.slice(1)]] = value;
-      delete where[key];
-    }
-
-    if (isObj(value)) dealOp(value);
-  }
-}
 /**
  * 首字母大写
  *
@@ -188,7 +176,7 @@ function parseSign(a, b, source, target) {
   key = key && key[0]; // 别名
 
   if (typeof b === 'string' && /^@/.test(b)) {
-    optionKey = b.match(PATTERN_IDENTIFIER)[0]; // sequelize v5 中会对属性的
+    optionKey = b.match(PATTERN_IDENTIFIER)[0]; // [HACK] sequelize v5 中会对属性的 undefined 抛出异常
 
     value = target[optionKey] || new Date();
   } // 可选项
@@ -197,46 +185,46 @@ function parseSign(a, b, source, target) {
   if (/^!/.test(a) && target[optionKey] == null) return; // Op
 
   let opTag = {
-    '>': '#gt',
-    '>=': '#gte',
-    '<': '#lt',
-    '<=': '#lte',
-    '!=': '#ne',
-    '=': '#and',
-    '#and': '#and',
-    '#or': '#or',
-    '#gt': '#gt',
-    '#gte': '#gte',
-    '#lt': '#lt',
-    '#lte': '#lte',
-    '#ne': '#ne',
-    '#eq': '#eq',
-    '#not': '#not',
-    '#between': '#between',
-    '#notBetween': '#notBetween',
-    '#in': '#in',
-    '#notIn': '#notIn',
-    '#like': '#like',
-    '#notLike': '#notLike',
-    '#iLike': '#iLike',
-    '#regexp': '#regexp',
-    '#iRegexp': '#iRegexp',
-    '#notIRegexp': '#notIRegexp',
-    '#overlap': '#overlap',
-    '#contains': '#contains',
-    '#contained': '#contained',
-    '#any': '#any',
-    '#col': '#col'
+    '>': 'gt',
+    '>=': 'gte',
+    '<': 'lt',
+    '<=': 'lte',
+    '!=': 'ne',
+    '=': 'and',
+    '#and': 'and',
+    '#or': 'or',
+    '#gt': 'gt',
+    '#gte': 'gte',
+    '#lt': 'lt',
+    '#lte': 'lte',
+    '#ne': 'ne',
+    '#eq': 'eq',
+    '#not': 'not',
+    '#between': 'between',
+    '#notBetween': 'notBetween',
+    '#in': 'in',
+    '#notIn': 'notIn',
+    '#like': 'like',
+    '#notLike': 'notLike',
+    '#iLike': 'iLike',
+    '#regexp': 'regexp',
+    '#iRegexp': 'iRegexp',
+    '#notIRegexp': 'notIRegexp',
+    '#overlap': 'overlap',
+    '#contains': 'contains',
+    '#contained': 'contained',
+    '#any': 'any',
+    '#col': 'col'
   };
   let argMatch = a.match(new RegExp('(' + Object.keys(opTag).map(arg => escapeStringRegexp(arg)).join('|') + ')'));
   let arg = opTag[argMatch ? argMatch[0] : '='];
 
-  if (arg === '#and') {
+  if (arg === 'and') {
     if (!source[key]) source[key] = [];
     source[key] = value;
   } else {
     if (!source[key]) source[key] = {};
-    source[key][arg] = value;
+    source[key][Op[arg]] = value;
   }
 }
 
@@ -342,7 +330,7 @@ let set = (key, value) => d => {
  */
 
 
-let merge$1 = (...funcs) => d => merge.recursive(true, {}, ...funcs.map(f => typeof f === 'function' ? f(d) : f));
+let merge$1 = (...funcs) => d => merge({}, ...funcs.map(f => typeof f === 'function' ? f(d) : f));
 
 function wrapper(v) {
   return Array.isArray(v) ? v : [v];
@@ -438,7 +426,7 @@ Handle.prototype = {
   process: process$1,
   transaction,
   before,
-  version: '1.0.0',
+  version: '1.0.1',
   after,
   __internal,
   __process,
@@ -673,7 +661,7 @@ function __reset() {
   };
 
   if (_opts) {
-    _opts = merge.recursive(true, {}, _opts);
+    _opts = merge({}, _opts);
   }
 
   return _opts;
