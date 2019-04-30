@@ -226,5 +226,10 @@ describe('其他', () => {
     const { body } = await get('/after', {uid: 2})
     expect(body).above(0)
   })
+
+  it('sequelize.fn', async () => {
+    const { body } = await get('/fn', {id: 2})
+    expect(body.commentTotal).exist
+  })
 })
 
