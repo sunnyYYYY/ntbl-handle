@@ -1,6 +1,6 @@
 {
   "name": "@ntbl/handle",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "一个基于 koa 和 sequelize 的中间库, 让你只专注于接口逻辑。",
   "main": "dist/handle.cjs.js",
   "module": "dist/handle.es.js",
@@ -48,6 +48,7 @@
     "validate-npm-package-name": "^3.0.0"
   },
   "dependencies": {
+    "assign-deep": "^1.0.0",
     "chalk": "^2.4.1",
     "escape-string-regexp": "^1.0.5",
     "glob": "^7.1.3",

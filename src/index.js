@@ -1,4 +1,4 @@
-import merge from 'merge'
+import merge from 'assign-deep'
 import Mock from 'mockjs'
 import {
   getOp,
@@ -271,7 +271,7 @@ function __reset() {
   }
 
   if (_opts) {
-    _opts = merge.recursive(true, {}, _opts)
+    _opts = merge({}, _opts)
   }
 
   return _opts

@@ -1,4 +1,4 @@
-import _merge from 'merge'
+import _merge from 'assign-deep'
 import {
   isObj,
   getOp,
@@ -104,7 +104,7 @@ let set = (key, value) => d => {
  *
  * @param funcs
  */
-let merge = (...funcs) => d => _merge.recursive(true, {}, ...(funcs.map(f => typeof f === 'function' ? f(d) : f)))
+let merge = (...funcs) => d => _merge({}, ...(funcs.map(f => typeof f === 'function' ? f(d) : f)))
 
 
 function wrapper (v) {

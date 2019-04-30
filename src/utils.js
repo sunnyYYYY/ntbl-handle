@@ -1,4 +1,4 @@
-import merge from 'merge'
+import merge from 'assign-deep'
 import path from 'path'
 import chalk from 'chalk'
 import escapeStringRegexp from 'escape-string-regexp'
@@ -121,7 +121,7 @@ export let mixinScope = (d, defaultScope, scopes) => {
     else res = scope(d)
     return res
   })
-  const opts = merge.recursive(true, ...result)
+  const opts = merge(...result)
   dealOp(opts.where)
   return opts
 

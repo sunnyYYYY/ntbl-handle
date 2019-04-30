@@ -50,7 +50,7 @@ const builds = {
     // 具体配置请参考 https://github.com/rollup/rollup-plugin-node-resolve
     resolveOptions: {},
     // 外部包（打包时会忽略这些包）
-    external: ['merge', 'escape-string-regexp', 'glob', 'path', 'chalk', 'mockjs', 'sequelize'],
+    external: ['assign-deep', 'escape-string-regexp', 'glob', 'path', 'chalk', 'mockjs', 'sequelize'],
   },
   'es': {
     entry: 'src/index.js',
@@ -69,7 +69,7 @@ const builds = {
     // 具体配置请参考 https://github.com/rollup/rollup-plugin-node-resolve
     resolveOptions: {},
     // 外部包（打包时会忽略这些包）
-    external: ['merge', 'escape-string-regexp', 'glob', 'path', 'chalk', 'mockjs', 'sequelize']
+    external: ['assign-deep', 'escape-string-regexp', 'glob', 'path', 'chalk', 'mockjs', 'sequelize']
   }
 }
 
