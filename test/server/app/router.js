@@ -37,6 +37,7 @@ router
   .get('/sum', api.sum)
   .post('/before', api.before)
   .get('/after', api.after)
+  .get('/fn', api.fn)
 
   // .get('/scopes/fuzzyQuery', api.fuzzyQuery)
   // .get('/instance/options/raw', api.raw)

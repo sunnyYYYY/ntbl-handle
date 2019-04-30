@@ -17,4 +17,6 @@ comment.belongsTo(article, {foreignKey: 'aid'})
 
 // sequelize.sync({alter: true})
 
+db.sequelize = sequelize
+
 export default db

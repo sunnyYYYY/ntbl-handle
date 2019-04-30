@@ -152,7 +152,19 @@ const other = {
       return data.length
     })
     .where('uid')
-    .findAll()
+    .findAll(),
+
+  fn: db.article
+    .scope({
+      attributes: [
+        [db.sequelize.fn('COUNT', db.sequelize.col('comments.id')), 'commentTotal'],
+      ],
+      include: {
+        all: true
+      },
+    })
+    .where('id')
+    .findOne()
 }
 
 
