@@ -1,14 +1,34 @@
-
 # Handle.js
 
 [![GitHub](https://img.shields.io/badge/GitHub-yeshimei-green.svg)](https://github.com/yeshimei/ntbl-handle.git) [![npm](https://img.shields.io/npm/v/@ntbl/handle.svg)](https://www.npmjs.com/package/@ntbl/handle) [![MIT](https://img.shields.io/npm/l/express.svg)](https://github.com/yeshimei/ntbl-handle.git)
 
 Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。
 
-[API Documentation](https://yeshimei.github.io/ntbl-handle/)
+[**API Documentation**](https://yeshimei.github.io/ntbl-handle/)
+
+- [Installation](#Installation)
+- [Usage](#Usage)
+- [加载器](#加载器)
+- [实例方法](#实例方法)
+- [修改默认的请求方法](#修改默认的请求方法)
+    - [工具方法](#工具方法)
+    - [接口参数](#接口参数)
+    - [模糊查询](#模糊查询)
+    - [分页](#分页)
+    - [排序](#排序)
+    - [关联](#关联)
+    - [数据处理](#数据处理)
+    - [条件分支](#条件分支)
+    - [Scope](#Scope)
+    - [自定义](#自定义)
+- [Process](#Process)
+- [事务](#事务)
+- [钩子](#钩子)
+- [原生数据](#原生数据)
+- [一句话](#一句话)
 
 
-# 安装
+# Installation
 
 ```bash
 npm i @ntbl/handle --save
@@ -484,37 +504,6 @@ article
 
 `process` 的是为一个接口需要多表操作并且对返回数据进一步处理的情况提供，也是实现更为复杂的接口的一个台阶。
 
-这里，我们先分解了一个分页工具函数。
-
-```javascript
-articleStar.process(async function (d) {
-  // 这里我们分解了工具函数里的分页      
-  const {count = 15, page = 0, uid} = d
-  // 注意，process 内部需要用过程方法
-  // 需要返回数据进一步处理
-  const res = await this.rawFindAll({
-    include: [
-      {
-        // 关联查询文章数据
-        model: Article,
-        // 并且查询文章的用户数据
-        include: [User]
-      }
-    ],
-    // 通过 uid 查询
-    where: { uid },
-    // 分页
-    limit: count,
-    offset: page * count
-  })
-  
-  // 过滤数据，仅返回文章数据
-  return res && res.map(d => d.article)
-})
-```
-
-然后，再看看多表操作。
-
 ```js
 const find = artcile.process(async function (d) {
     // 数据校验
@@ -625,7 +614,7 @@ article
 但是，你需要了解，Request Data 仍然会用于各种场景下，比如 Scope 和 where 工具函数的解析，只是在最后合成 sequelize 方法的参数时，Request Data 被替换成了 原生数据，也就意味着，在钩子或者其他地方修改 Request Data 不会应用到数据库访问中。通过这一点，你可以使用类似 mock 的库批量向数据库添加数据。（并在未来可能会支持 mocK 的数据模拟）
 
 
-## 一句话
+# 一句话
 
 一句话，如果你在工具函数中找不到可以帮你解决问题的函数时，我强烈建议你把相关代码封装成一个自定义的 scope 再使用，其一是你会有个优雅的代码结构和可读的命名，其二，当在其他地方复用时你必须再重新写一遍。如果你的 scope 足够通用时，你可以提交到 handle.js 中，为更多的人提供便利。
 
