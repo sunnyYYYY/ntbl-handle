@@ -33,7 +33,7 @@
 			<li class="dropdown">
 				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
 				<ul class="dropdown-menu ">
-					<li><a href="Handle.module_Include.html">Handle.Include</a></li><li><a href="Handle.module_Scopes.html">Handle.Scopes</a></li>
+					<li><a href="Handle.module_Scopes.html">Handle.Scopes</a></li>
 				</ul>
 			</li>
 			
@@ -95,8 +95,32 @@
     <section class="readme-section">
         <article><h1>Handle.js</h1><p><a href="https://github.com/yeshimei/ntbl-handle.git"><img src="https://img.shields.io/badge/GitHub-yeshimei-green.svg" alt="GitHub"></a> <a href="https://www.npmjs.com/package/@ntbl/handle"><img src="https://img.shields.io/npm/v/@ntbl/handle.svg" alt="npm"></a> <a href="https://github.com/yeshimei/ntbl-handle.git"><img src="https://img.shields.io/npm/l/express.svg" alt="MIT"></a></p>
 <p>Handle，一个基于 koa 和 sequelize 的中间库，让你只专注于接口逻辑。</p>
-<p><a href="https://yeshimei.github.io/ntbl-handle/">API Documentation</a></p>
-<h1>安装</h1><pre class="prettyprint source lang-bash"><code>npm i @ntbl/handle --save</code></pre><h1>Usage</h1><pre class="prettyprint source lang-javascript"><code>import Handle from '@ntbl/handle'
+<p><a href="https://yeshimei.github.io/ntbl-handle/"><strong>API Documentation</strong></a></p>
+<ul>
+<li><a href="#Installation">Installation</a></li>
+<li><a href="#Usage">Usage</a></li>
+<li><a href="#加载器">加载器</a></li>
+<li><a href="#实例方法">实例方法</a></li>
+<li><a href="#修改默认的请求方法">修改默认的请求方法</a><ul>
+<li><a href="#工具方法">工具方法</a></li>
+<li><a href="#接口参数">接口参数</a></li>
+<li><a href="#模糊查询">模糊查询</a></li>
+<li><a href="#分页">分页</a></li>
+<li><a href="#排序">排序</a></li>
+<li><a href="#关联">关联</a></li>
+<li><a href="#数据处理">数据处理</a></li>
+<li><a href="#条件分支">条件分支</a></li>
+<li><a href="#Scope">Scope</a></li>
+<li><a href="#自定义">自定义</a></li>
+</ul>
+</li>
+<li><a href="#Process">Process</a></li>
+<li><a href="#事务">事务</a></li>
+<li><a href="#钩子">钩子</a></li>
+<li><a href="#原生数据">原生数据</a></li>
+<li><a href="#一句话">一句话</a></li>
+</ul>
+<h1>Installation</h1><pre class="prettyprint source lang-bash"><code>npm i @ntbl/handle --save</code></pre><h1>Usage</h1><pre class="prettyprint source lang-javascript"><code>import Handle from '@ntbl/handle'
 // 导入 sequelize 模型
 import { Article } from '../models/db'
 
@@ -127,16 +151,23 @@ const db = Handle.loadAll(sequelize, __dirname, {
 })</code></pre><h1>实例方法</h1><p>Handle 拥有大部分 sequelize 模型实例上的方法，分为两类。</p>
 <p>第一类，统称为<strong>快捷方法</strong>。调用后直接生成一个 async 函数（接口函数），可以直接挂载至路由，<strong>无须编写一行代码。</strong>。</p>
 <ul>
-<li><strong>GET：</strong> findOne, findAll, findById, findOrCreate, findAndCountAll, findAndCount, findCreateFind, count, max, min, sum</li>
+<li><strong>GET：</strong> findOne, findAll, findById, findOrCreate, findAndCountAll, findCreateFind, count, max, min, sum</li>
 <li><strong>POST:</strong> create, bulkCreate, update, destroy, increment, decrement</li>
 </ul>
 <pre class="prettyprint source lang-js"><code>router.get('/article/find', article.findAll())</code></pre><p>第二类，统称为<strong>过程方法</strong>，调用后仅返回数据，配合实例的 <code>process</code> 方法进一步处理。</p>
-<p>rawFindOne, rawFindAll, rawFindById, rawFindOrCreate, rawFindAndCountAll, rawFindAndCount, rawFindCreateFind, rawCount, rawMax, rawMin, rawSum，rawCreate, rawBulkCreate, rawUpdate, rawDestroy, rawIncrement, rawDecrement</p>
+<p>rawFindOne, rawFindAll, rawFindById, rawFindOrCreate, rawFindAndCountAll, rawFindCreateFind, rawCount, rawMax, rawMin, rawSum，rawCreate, rawBulkCreate, rawUpdate, rawDestroy, rawIncrement, rawDecrement</p>
 <pre class="prettyprint source lang-js"><code>const find = artcile.process(async function (d) {
+    // 数据校验
+    // 略去
+
     // 查询用户
-    const userData = await user.rawFindOne(['username', 'password'])
+    const userData = await user
+        .where('username', 'password')
+        .rawFindOne()
     // 查询当前用户的文章
-    const result = await this.rawFindAll([['id', userData.id]])
+    const result = await this
+        .where(['id', userData.id])
+        .rawFindAll()
     // 仅返回被推荐的文章
     return result.filter(e => e.type === 'recommend')
 })
@@ -207,7 +238,7 @@ article
     .findAll()</code></pre><p>某些 Op 语法需要特殊的动态值，为此，Handle 增加了传入数组的第二个元素对函数写法的支持。</p>
 <pre class="prettyprint source lang-js"><code>article
     // 一个模糊查询
-    .where(['title $like', d => `%${d.title}%`])
+    .where(['title #like', d => `%${d.title}%`])
     .findAll()</code></pre><p>where 支持的所有 Op 便捷写法。</p>
 <pre class="prettyprint source lang-javascript"><code>let opTag = {
     '>': 'gt',
@@ -216,30 +247,30 @@ article
     '&lt;=': 'lte',
     '!=': 'ne',
     '=': 'and',
-    '$and': 'and',
-    '$or': 'or',
-    '$gt': 'gt',
-    '$gte': 'gte',
-    '$lt': 'lt',
-    '$lte': 'lte',
-    '$ne': 'ne',
-    '$eq': 'eq',
-    '$not': 'not',
-    '$between': 'between',
-    '$notBetween': 'notBetween',
-    '$in': 'in',
-    '$notIn': 'notIn',
-    '$like': 'like',
-    '$notLike': 'notLike',
-    '$iLike': 'iLike',
-    '$regexp': 'regexp',
-    '$iRegexp': 'iRegexp',
-    '$notIRegexp': 'notIRegexp',
-    '$overlap': 'overlap',
-    '$contains': 'contains',
-    '$contained': 'contained',
-    '$any': 'any',
-    '$col': 'col',
+    '#and': 'and',
+    '#or': 'or',
+    '#gt': 'gt',
+    '#gte': 'gte',
+    '#lt': 'lt',
+    '#lte': 'lte',
+    '#ne': 'ne',
+    '#eq': 'eq',
+    '#not': 'not',
+    '#between': 'between',
+    '#notBetween': 'notBetween',
+    '#in': 'in',
+    '#notIn': 'notIn',
+    '#like': 'like',
+    '#notLike': 'notLike',
+    '#iLike': 'iLike',
+    '#regexp': 'regexp',
+    '#iRegexp': 'iRegexp',
+    '#notIRegexp': 'notIRegexp',
+    '#overlap': 'overlap',
+    '#contains': 'contains',
+    '#contained': 'contained',
+    '#any': 'any',
+    '#col': 'col',
   }</code></pre><p>另外，以上的六种便捷写法互相之间可以组合，但你需要了解一些约束：</p>
 <ul>
 <li>别名语法（<code>@</code>） 只能用于数组中的第二个元素上</li>
@@ -262,7 +293,7 @@ article
 full: db.article
     .where('uid')
     .where('!id')
-    .where(['!title $like', d => `%${d.title}%`])
+    .where(['!title #like', d => `%${d.title}%`])
     .findAll()</code></pre><h2>模糊查询</h2><p><code>fuzzyQuery</code>（模糊查询）、<code>fuzzyQueryLeft</code>（左模糊查询）、<code>fuzzyQueryRight</code>（右模糊查询）可以帮你快速生成一个模糊查询。</p>
 <pre class="prettyprint source lang-js"><code>article
     // 接受一个查询参数
@@ -374,36 +405,18 @@ article
 <pre class="prettyprint source lang-js"><code>article
     .myUtil()
     .findAll()</code></pre><h1>Process</h1><p><code>process</code> 的是为一个接口需要多表操作并且对返回数据进一步处理的情况提供，也是实现更为复杂的接口的一个台阶。</p>
-<p>这里，我们先分解了一个分页工具函数。</p>
-<pre class="prettyprint source lang-javascript"><code>articleStar.process(async function (d) {
-  // 这里我们分解了工具函数里的分页      
-  const {count = 15, page = 0, uid} = d
-  // 注意，process 内部需要用过程方法
-  // 需要返回数据进一步处理
-  const res = await this.rawFindAll({
-    include: [
-      {
-        // 关联查询文章数据
-        model: Article,
-        // 并且查询文章的用户数据
-        include: [User]
-      }
-    ],
-    // 通过 uid 查询
-    where: { uid },
-    // 分页
-    limit: count,
-    offset: page * count
-  })
-
-  // 过滤数据，仅返回文章数据
-  return res && res.map(d => d.article)
-})</code></pre><p>然后，再看看多表操作。</p>
 <pre class="prettyprint source lang-js"><code>const find = artcile.process(async function (d) {
+    // 数据校验
+    // 略去
+
     // 查询用户
-    const userData = await user.rawFindOne(['username', 'password'])
+    const userData = await user
+        .where('username', 'password')
+        .rawFindOne()
     // 查询当前用户的文章
-    const result = await this.rawFindAll([['id', userData.id]])
+    const result = await this
+        .where(['id', userData.id])
+        .rawFindAll()
     // 仅返回被推荐的文章
     return result.filter(e => e.type === 'recommend')
 })</code></pre><p>process 默认为 get 请求，Handle 支持 6 种 http 标准请求方法（get/head/put/delete/post/options）</p>
@@ -455,29 +468,7 @@ article
 article
   .raw('hot')
   .increment('id')</code></pre><p>但是，你需要了解，Request Data 仍然会用于各种场景下，比如 Scope 和 where 工具函数的解析，只是在最后合成 sequelize 方法的参数时，Request Data 被替换成了 原生数据，也就意味着，在钩子或者其他地方修改 Request Data 不会应用到数据库访问中。通过这一点，你可以使用类似 mock 的库批量向数据库添加数据。（并在未来可能会支持 mocK 的数据模拟）</p>
-<h1>差异性的问题</h1><p>Handle 做为中间库，不会更改 sequelize 原生用法，它只关注一件事，就是让你用最少的代码写出最复杂的接口并让代码具有良好的可读性。另外，从代码层面上引导你编写可复用的代码。</p>
-<p>但是，由于一些轮子依赖，在某些特定情况会产生一些约束，这些约束都会在这里指出，并在后续版本中解决，了解它们，可以更好的帮助你使用 Handle。</p>
-<ol>
-<li><strong>很遗憾，你无法使用 Sequelize.Op</strong>，但是可以使用字符串标识替代（但是在 v5 中会抛出一个废弃警告），原因是 Op 返回的是一个 Symbol 类型，作为对象的 key 使用时 Handle 所依赖的 <code>merge</code> 无法深度合并 Symbol，导致数据丢失。</li>
-</ol>
-<pre class="prettyprint source lang-javascript"><code>// 会丢失
-article
-  .scope({
-      where: {
-        [Op.lt]: 2
-      }
-  })
-  .findAll()
-
-// 更改为字符串语法
-
-article
-  .scope({
-      where: {
-        'it': 2
-      }
-  })
-  .findAll()</code></pre><h2>一句话</h2><p>一句话，如果你在工具函数中找不到可以帮你解决问题的函数时，我强烈建议你把相关代码封装成一个自定义的 scope 再使用，其一是你会有个优雅的代码结构和可读的命名，其二，当在其他地方复用时你必须再重新写一遍。如果你的 scope 足够通用时，你可以提交到 handle.js 中，为更多的人提供便利。</p>
+<h1>一句话</h1><p>一句话，如果你在工具函数中找不到可以帮你解决问题的函数时，我强烈建议你把相关代码封装成一个自定义的 scope 再使用，其一是你会有个优雅的代码结构和可读的命名，其二，当在其他地方复用时你必须再重新写一遍。如果你的 scope 足够通用时，你可以提交到 handle.js 中，为更多的人提供便利。</p>
 <p><strong>如果你不使用 pull requests 或 Issues，也可以通过以下方式联系到我：</strong></p>
 <ul>
 <li><strong>qq ☞</strong> 1517642399</li>
@@ -528,7 +519,7 @@ article
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
 	
-		on 2019-04-23T13:37:31+08:00
+		on 2019-05-27T14:50:38+08:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
